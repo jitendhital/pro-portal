@@ -1,23 +1,61 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, } from "react";
 
 export default function SignUp() {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const form = new FormData(e.target);
-    const payload = {
-      username: form.get("username"),
-      email: form.get("email"),
-      password: form.get("password"),
-    };
-    // wire this to your auth API
-    console.log("signup payload", payload);
-  };
+  const[formData, setFormData] = useState({});
+  const[error, setError] = useState(null);
+  const[loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const handleChange=(e)=>{  // to keep track of changes in input fields
+    setFormData({
+      ...formData,  // keep old values
+      [e.target.name]: e.target.value // overwrite only the changed field
+    })}
+  
+  const handleSubmit = async(e) => {
+    e.preventDefault();  // Stops browser from refreshing the page when form is submitted.
+    try {
+      setLoading(true);
+    const res= await fetch('/api/auth/signup',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(formData),
+    })
+  
+    // Safely parse JSON; handle empty/non-JSON responses
+    const text = await res.text();
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch (_) {
+      data = {};
+    }
 
+    if(!res.ok || data.success===false){
+      setLoading(false);
+      setError(data.message || res.statusText || 'Signup failed');
+      return; 
+    }
+      setLoading(false);
+      setError(null);
+      navigate('/signIn');
+    } catch (error) {
+      setLoading(false);
+      setError(error.message);
+    }
+  
+  }
   const handleGoogle = () => {
     // trigger your OAuth flow here
     console.log("continue with Google");
-  };
+  }
+  
+
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-6">
@@ -41,6 +79,7 @@ export default function SignUp() {
                 required
                 className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 placeholder="your username"
+                onChange={handleChange}
               />
             </div>
 
@@ -53,6 +92,7 @@ export default function SignUp() {
                 required
                 className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 placeholder="you@example.com"
+                onChange={handleChange}
               />
             </div>
 
@@ -65,14 +105,16 @@ export default function SignUp() {
                 required
                 className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 placeholder="Create a strong password"
+                onChange={handleChange}
               />
             </div>
 
             <button
               type="submit"
               className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white font-semibold px-4 py-2 shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              disabled={loading}
             >
-              Sign up
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </button>
           </form>
 
@@ -99,7 +141,7 @@ export default function SignUp() {
           </div>
 
           <p className="mt-5 text-center text-sm text-slate-500">
-            Have an account? <Link to="/signin" className="font-semibold text-indigo-600 hover:underline">Sign in</Link>
+            Have an account? <Link to="/signIn" className="font-semibold text-indigo-600 hover:underline">Sign in</Link>
           </p>
 
           <p className="mt-4 text-xs text-slate-400 text-center">
@@ -108,7 +150,9 @@ export default function SignUp() {
             <Link to="/privacy" className="underline">Privacy Policy</Link>.
           </p>
         </div>
+        {error && <div className="mt-4 text-red-600 text-center">{error}</div>}
       </div>
+      
     </div>
   );
 }

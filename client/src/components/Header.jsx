@@ -42,10 +42,15 @@ export default function Header() {
             </li>
           </Link>
 
-          {/* The "Sign In" link is always visible */}
+          {/* The "Sign In" and "Sign Up" links are always visible */} 
           <Link to="/signIn"> 
             <li className="text-slate-700 hover:underline">
               Sign In
+            </li>
+          </Link>
+          <Link to="/signUp"> 
+            <li className="text-slate-700 hover:underline">
+              Sign Up
             </li>
           </Link>
         </ul>
