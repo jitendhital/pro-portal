@@ -14,10 +14,10 @@ export default function SignUp() {
     })}
   
   const handleSubmit = async(e) => {
-    e.preventDefault();  // Stops browser from refreshing the page when form is submitted.
+    e.preventDefault();  // stops page reload when the form submits.
     try {
-      setLoading(true);
-    const res= await fetch('/api/auth/signup',{
+      setLoading(true); //flips a loading state so the UI can disable the button / show spinner.
+    const res= await fetch('/api/auth/signup',{   //sends the collected formData to your backend.
       method:'POST',
       headers:{
         'Content-Type':'application/json'
@@ -42,6 +42,7 @@ export default function SignUp() {
       setLoading(false);
       setError(null);
       navigate('/signIn');
+
     } catch (error) {
       setLoading(false);
       setError(error.message);
@@ -68,6 +69,7 @@ export default function SignUp() {
         <div className="px-8 pb-8">
           <h1 className="text-2xl font-extrabold text-slate-900">Create your account</h1>
           <p className="mt-2 text-sm text-slate-500">Join us — enter your details to get started.</p>
+
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4" aria-label="signup form">
             <div>
@@ -116,6 +118,7 @@ export default function SignUp() {
             >
               {loading ? 'Signing Up...' : 'Sign Up'}
             </button>
+            {error && <div className="mt-4 text-red-600 text-center">{error}</div>}
           </form>
 
           <div className="mt-4 flex items-center gap-3">
@@ -150,7 +153,7 @@ export default function SignUp() {
             <Link to="/privacy" className="underline">Privacy Policy</Link>.
           </p>
         </div>
-        {error && <div className="mt-4 text-red-600 text-center">{error}</div>}
+        
       </div>
       
     </div>
