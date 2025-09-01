@@ -50,6 +50,8 @@ export const signup = async (req, res, next) => {
   }
 };
 
+
+
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
   
@@ -61,15 +63,24 @@ export const signin = async (req, res, next) => {
   }
 
   try {
+    //Uses Mongoose to search the database for a user with the given email.
     const validUser = await User.findOne({ email });
     if (!validUser) return next(errorHandler(404, 'User not found!'));
+
+    //Compares the plain text password from the request with the hashed password stored in the 
+    //database. bcryptjs.compareSync returns true if they match, false otherwise.
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     if (!validPassword) return next(errorHandler(401, 'Wrong credentials!'));
+    //If the user is found and the password is valid, a JWT token is created using the user's ID
+    //and a secret key from the environment variables.
+    //The password is excluded from the user object before sending the response.
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
+
+    //Extracts everything from the user document except the password.
     const { password: pass, ...rest } = validUser._doc;
     res
-      .cookie('access_token', token, { httpOnly: true })
-      .status(200)
+      .cookie('access_token', token, { httpOnly: true })//Sets a cookie named access_token with the //JWT.
+      .status(200)//{ httpOnly: true } → makes the cookie inaccessible to JavaScript (for security).
       .json(rest);
   } catch (error) {
     next(error);
