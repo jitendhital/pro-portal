@@ -8,6 +8,9 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  optimizeDeps: {
+    include: ['redux-persist/lib/storage']
+  },
   server: {
     proxy: {
       '/api': {

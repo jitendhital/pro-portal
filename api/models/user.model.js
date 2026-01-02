@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
      password:{
         type: String,
         required: true,
+     },
+     avatar:{
+        type: String,
+        default:"https://pixabay.com/illustrations/icon-profile-user-clip-art-7797704/"
      }
     }, {timestamps: true});
 
