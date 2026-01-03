@@ -1,8 +1,10 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 export default function Header() {
+   const { currentUser } = useSelector((state) => state.user);
   return (
     // Header container with a light gray-blue background and a subtle shadow
     <header className="bg-slate-200 shadow-md">
@@ -43,11 +45,19 @@ export default function Header() {
           </Link>
 
           {/* The "Sign In" and "Sign Up" links are always visible */} 
-          <Link to="/signIn"> 
-            <li className="text-slate-700 hover:underline">
-              Sign In
-            </li>
-          </Link>
+           {currentUser ? (
+            <Link to='/profile'>
+              <img
+                className='rounded-full h-7 w-7 object-cover'
+                src={currentUser.avatar}
+                alt='profile'
+              />
+            </Link>
+          ) : (
+            <Link to='/signIn'>
+              <li className=' text-slate-700 hover:underline'> Sign in</li>
+            </Link>
+          )}
           
         </ul>
       </div>
