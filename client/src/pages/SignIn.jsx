@@ -26,6 +26,7 @@ export default function SignIn() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify(formData),
       });
 
@@ -42,7 +43,8 @@ export default function SignIn() {
         return;
       }
 
-      dispatch(signInSuccess(data.user));
+      // Backend returns user directly, not wrapped in data.user
+      dispatch(signInSuccess(data));
       navigate("/");
     } catch (error) {
      dispatch(signInFailure(error.message));

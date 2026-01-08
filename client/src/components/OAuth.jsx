@@ -19,6 +19,7 @@ export default function OAuth() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify({
           name: result.user.displayName,
           email: result.user.email,
@@ -26,8 +27,9 @@ export default function OAuth() {
         }),
       });
       const data = await res.json();
-       dispatch(signInSuccess(data));
-    navigate('/');
+      // Backend returns user directly
+      dispatch(signInSuccess(data));
+      navigate('/');
       console.log(data);
     }
     catch (error) {

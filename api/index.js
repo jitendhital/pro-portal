@@ -1,5 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
 import dotenv from "dotenv";
@@ -9,6 +10,7 @@ dotenv.config();
 // Connect to MongoDB then start server
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
+app.use(cookieParser()); // Middleware to parse cookies
 
 mongoose
   .connect('mongodb+srv://jiten:jiten@pro-portal.r9ldr7q.mongodb.net/?retryWrites=true&w=majority&appName=pro-portal')
