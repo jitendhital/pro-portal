@@ -1,16 +1,24 @@
 import React, { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { uploadImage } from '../utils/uploadImage';
-import { updateUserStart, updateUserSuccess, updateUserFailure } from '../redux/user/userSlice';
+import { updateUserStart, updateUserSuccess, updateUserFailure, signOutStart, signOutSuccess, signOutFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure } from '../redux/user/userSlice';
 
 export default function Profile() {
-  const { currentUser, loading } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const fileRef = useRef(null);
   const [file, setFile] = useState(null);
   const [fileUploadError, setFileUploadError] = useState(null);
   const [filePerc, setFilePerc] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    username: currentUser?.username || '',
+    email: currentUser?.email || '',
+    password: '',
+  });
 
   const handleFileUpload = async (file) => {
     if (!file) return;
@@ -79,10 +87,143 @@ export default function Profile() {
     }
   };
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUpdateSuccess(false);
+    
+    try {
+      dispatch(updateUserStart());
+      
+      // Only send fields that have values
+      const updateData = {};
+      if (formData.username && formData.username !== currentUser.username) {
+        updateData.username = formData.username;
+      }
+      if (formData.email && formData.email !== currentUser.email) {
+        updateData.email = formData.email;
+      }
+      if (formData.password) {
+        updateData.password = formData.password;
+      }
+
+      // If no fields to update
+      if (Object.keys(updateData).length === 0) {
+        dispatch(updateUserFailure('No changes to update'));
+        return;
+      }
+
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(updateData),
+      });
+
+      const text = await res.text();
+      let data = {};
+      
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+          throw new Error('Invalid response from server');
+        }
+      }
+
+      if (!res.ok || data.success === false) {
+        dispatch(updateUserFailure(data.message || 'Update failed'));
+        return;
+      }
+
+      dispatch(updateUserSuccess(data.user));
+      setUpdateSuccess(true);
+      // Clear password field after successful update
+      setFormData({ ...formData, password: '' });
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      dispatch(signOutStart());
+      const res = await fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const text = await res.text();
+      let data = {};
+      
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+        }
+      }
+
+      if (!res.ok || data.success === false) {
+        dispatch(signOutFailure(data.message || 'Sign out failed'));
+        return;
+      }
+
+      dispatch(signOutSuccess());
+      navigate('/signIn');
+    } catch (error) {
+      dispatch(signOutFailure(error.message));
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const text = await res.text();
+      let data = {};
+      
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+        }
+      }
+
+      if (!res.ok || data.success === false) {
+        dispatch(deleteUserFailure(data.message || 'Delete account failed'));
+        return;
+      }
+
+      dispatch(deleteUserSuccess());
+      navigate('/signIn');
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
-      <form className='flex flex-col gap-4'>
+      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
         <input
           onChange={handleFileChange}
           type='file'
@@ -117,34 +258,54 @@ export default function Profile() {
           type='text'
           placeholder='username'
           id='username'
+          value={formData.username}
+          onChange={handleChange}
           className='border p-3 rounded-lg'
         />
         <input
           type='email'
           placeholder='email'
           id='email'
+          value={formData.email}
+          onChange={handleChange}
           className='border p-3 rounded-lg'
         />
         <input
           type='password'
           placeholder='password'
           id='password'
+          value={formData.password}
+          onChange={handleChange}
           className='border p-3 rounded-lg'
         />
 
         <button 
           type='submit'
+          disabled={loading}
           className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
         >
-          Update
+          {loading ? 'Updating...' : 'Update'}
         </button>
       </form>
+
+      {error && (
+        <p className='text-red-600 text-center mt-3'>{error}</p>
+      )}
+      {updateSuccess && (
+        <p className='text-green-600 text-center mt-3'>Profile updated successfully!</p>
+      )}
       
       <div className='flex justify-between mt-5'>
-        <span className='text-red-700 cursor-pointer'>
+        <span 
+          onClick={handleDeleteAccount}
+          className='text-red-700 cursor-pointer hover:underline'
+        >
           Delete account
         </span>
-        <span className='text-red-700 cursor-pointer'>
+        <span 
+          onClick={handleSignOut}
+          className='text-red-700 cursor-pointer hover:underline'
+        >
           Sign out
         </span>
       </div>
