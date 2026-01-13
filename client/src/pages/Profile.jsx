@@ -295,6 +295,13 @@ export default function Profile() {
         <p className='text-green-600 text-center mt-3'>Profile updated successfully!</p>
       )}
       
+      <button
+        onClick={() => navigate('/create-listing')}
+        className='w-full bg-green-700 text-white rounded-lg p-3 uppercase hover:opacity-95 mt-4'
+      >
+        Create Listing
+      </button>
+      
       <div className='flex justify-between mt-5'>
         <span 
           onClick={handleDeleteAccount}
