@@ -1,4 +1,5 @@
 import User from '../models/user.model.js';
+import Listing from '../models/listing.model.js';
 import { errorHandler } from '../utils/errors.js';
 import bcryptjs from 'bcryptjs';
 
@@ -80,13 +81,18 @@ export const deleteUser = async (req, res, next) => {
   }
 
   try {
+    // Delete all listings associated with this user
+    await Listing.deleteMany({ userRef: req.params.userId });
+    
+    // Delete the user
     await User.findByIdAndDelete(req.params.userId);
+    
     res
       .clearCookie('access_token')
       .status(200)
       .json({
         success: true,
-        message: 'User has been deleted',
+        message: 'User and associated listings have been deleted',
       });
   } catch (error) {
     next(error);

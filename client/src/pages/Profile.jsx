@@ -18,6 +18,7 @@ export default function Profile() {
   const [userListings, setUserListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(false);
   const [listingsError, setListingsError] = useState(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [formData, setFormData] = useState({
     username: currentUser?.username || '',
     email: currentUser?.email || '',
@@ -190,14 +191,24 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete your account? This will permanently delete your account and all your listings. This action cannot be undone.')) {
+      return;
+    }
+
+    // Double confirmation for safety
+    if (!window.confirm('This is your final warning. Are you absolutely sure?')) {
       return;
     }
 
     try {
+      setDeletingAccount(true);
       dispatch(deleteUserStart());
+      
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
       });
 
@@ -209,18 +220,25 @@ export default function Profile() {
           data = JSON.parse(text);
         } catch (parseError) {
           console.error('Failed to parse response:', parseError);
+          throw new Error('Invalid response from server');
         }
       }
 
       if (!res.ok || data.success === false) {
         dispatch(deleteUserFailure(data.message || 'Delete account failed'));
+        setDeletingAccount(false);
         return;
       }
 
       dispatch(deleteUserSuccess());
-      navigate('/signIn');
+      // Small delay to show success message before redirect
+      setTimeout(() => {
+        navigate('/signIn');
+      }, 500);
     } catch (error) {
-      dispatch(deleteUserFailure(error.message));
+      console.error('Error deleting account:', error);
+      dispatch(deleteUserFailure(error.message || 'An error occurred while deleting your account'));
+      setDeletingAccount(false);
     }
   };
 
@@ -255,27 +273,43 @@ export default function Profile() {
   };
 
   const handleListingDelete = async (listingId) => {
-    if (!window.confirm('Are you sure you want to delete this listing?')) {
+    if (!window.confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
       return;
     }
 
     try {
       const res = await fetch(`/api/listing/delete/${listingId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data = {};
+      
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+          setListingsError('Failed to delete listing. Please try again.');
+          return;
+        }
+      }
 
-      if (data.success === false) {
-        alert(data.message || 'Failed to delete listing');
+      if (!res.ok || data.success === false) {
+        setListingsError(data.message || 'Failed to delete listing');
         return;
       }
 
       // Remove the deleted listing from the list
       setUserListings((prev) => prev.filter((listing) => listing._id !== listingId));
+      setListingsError(null);
     } catch (error) {
-      alert(error.message);
+      console.error('Error deleting listing:', error);
+      setListingsError(error.message || 'An error occurred while deleting the listing');
     }
   };
 
@@ -364,9 +398,10 @@ export default function Profile() {
       <div className='flex justify-between mt-5'>
         <span 
           onClick={handleDeleteAccount}
-          className='text-red-700 cursor-pointer hover:underline'
+          disabled={deletingAccount}
+          className={`text-red-700 cursor-pointer hover:underline ${deletingAccount ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          Delete account
+          {deletingAccount ? 'Deleting...' : 'Delete account'}
         </span>
         <span 
           onClick={handleShowListings}
@@ -403,7 +438,12 @@ export default function Profile() {
                       alt={listing.name}
                       className='w-20 h-20 object-cover rounded-lg'
                     />
-                    <p className='text-slate-700 font-semibold flex-1'>{listing.name}</p>
+                    <p 
+                      onClick={() => navigate(`/update-listing/${listing._id}`)}
+                      className='text-slate-700 font-semibold flex-1 cursor-pointer hover:underline'
+                    >
+                      {listing.name}
+                    </p>
                   </div>
                   <div className='flex gap-2'>
                     <button
