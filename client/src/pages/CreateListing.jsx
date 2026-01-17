@@ -134,8 +134,9 @@ export default function CreateListing() {
     try {
       if (formData.imageUrls.length < 1)
         return setError('You must upload at least one image');
-      if (+formData.regularPrice < +formData.discountPrice)
-        return setError('Discount price must be lower than regular price');
+      if (formData.offer && +formData.discountPrice >= +formData.regularPrice) {
+        return setError('Discount price must be less than regular price when offer is true');
+      }
       setLoading(true);
       setError(false);
       const res = await fetch('/api/listing/create', {
@@ -147,6 +148,10 @@ export default function CreateListing() {
         body: JSON.stringify({
           ...formData,
           userRef: currentUser._id,
+          regularPrice: parseFloat(formData.regularPrice),
+          discountPrice: parseFloat(formData.discountPrice),
+          bedrooms: parseInt(formData.bedrooms),
+          bathrooms: parseInt(formData.bathrooms),
         }),
       });
       const data = await res.json();
@@ -155,7 +160,7 @@ export default function CreateListing() {
         setError(data.message);
         return;
       }
-      navigate(`/listing/${data._id}`);
+      navigate(`/listing/${data.listing._id}`);
     } catch (error) {
       setError(error.message);
       setLoading(false);

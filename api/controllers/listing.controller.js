@@ -17,22 +17,29 @@ export const createListing = async (req, res, next) => {
       return next(errorHandler(400, `Missing required fields: ${missingFields.join(', ')}`));
     }
 
+    // Convert price fields to numbers
+    const regularPrice = parseFloat(listingData.regularPrice);
+    const discountPrice = parseFloat(listingData.discountPrice);
+
     // Validate price fields
-    if (listingData.regularPrice <= 0) {
+    if (isNaN(regularPrice) || regularPrice <= 0) {
       return next(errorHandler(400, 'Regular price must be greater than 0'));
     }
 
-    if (listingData.discountPrice < 0) {
+    if (isNaN(discountPrice) || discountPrice < 0) {
       return next(errorHandler(400, 'Discount price cannot be negative'));
     }
 
-    if (listingData.offer && listingData.discountPrice >= listingData.regularPrice) {
+    if (listingData.offer && discountPrice >= regularPrice) {
       return next(errorHandler(400, 'Discount price must be less than regular price when offer is true'));
     }
 
-    // Validate numeric fields
-    if (listingData.bathrooms < 0 || listingData.bedrooms < 0) {
-      return next(errorHandler(400, 'Bathrooms and bedrooms must be non-negative'));
+    // Convert and validate numeric fields
+    const bathrooms = parseInt(listingData.bathrooms);
+    const bedrooms = parseInt(listingData.bedrooms);
+    
+    if (isNaN(bathrooms) || bathrooms < 0 || isNaN(bedrooms) || bedrooms < 0) {
+      return next(errorHandler(400, 'Bathrooms and bedrooms must be non-negative numbers'));
     }
 
     // Validate type
@@ -46,7 +53,14 @@ export const createListing = async (req, res, next) => {
       return next(errorHandler(400, 'At least one image URL is required'));
     }
 
-    const listing = await Listing.create(listingData);
+    // Create listing with properly typed values
+    const listing = await Listing.create({
+      ...listingData,
+      regularPrice,
+      discountPrice,
+      bathrooms,
+      bedrooms,
+    });
     
     // Exclude sensitive data if any
     const { __v, ...listingResponse } = listing._doc;
@@ -80,4 +94,21 @@ export const getListing = async (req, res, next) => {
 
 export const getListings = async (req, res, next) => {
   return next(errorHandler(501, 'Get listings functionality not yet implemented'));
+};
+
+export const getUserListings = async (req, res, next) => {
+  try {
+    if (req.user.id !== req.params.userId) {
+      return next(errorHandler(403, 'You can only view your own listings'));
+    }
+
+    const listings = await Listing.find({ userRef: req.params.userId }).sort({ createdAt: -1 });
+    
+    return res.status(200).json({
+      success: true,
+      listings,
+    });
+  } catch (error) {
+    next(error);
+  }
 };

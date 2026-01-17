@@ -14,6 +14,10 @@ export default function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showListings, setShowListings] = useState(false);
+  const [userListings, setUserListings] = useState([]);
+  const [listingsLoading, setListingsLoading] = useState(false);
+  const [listingsError, setListingsError] = useState(null);
   const [formData, setFormData] = useState({
     username: currentUser?.username || '',
     email: currentUser?.email || '',
@@ -220,6 +224,61 @@ export default function Profile() {
     }
   };
 
+  const handleShowListings = async () => {
+    if (showListings) {
+      setShowListings(false);
+      return;
+    }
+
+    setListingsLoading(true);
+    setListingsError(null);
+    try {
+      const res = await fetch(`/api/listing/user/${currentUser._id}`, {
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+
+      if (data.success === false) {
+        setListingsError(data.message);
+        setListingsLoading(false);
+        return;
+      }
+
+      setUserListings(data.listings);
+      setShowListings(true);
+    } catch (error) {
+      setListingsError(error.message);
+    } finally {
+      setListingsLoading(false);
+    }
+  };
+
+  const handleListingDelete = async (listingId) => {
+    if (!window.confirm('Are you sure you want to delete this listing?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+
+      if (data.success === false) {
+        alert(data.message || 'Failed to delete listing');
+        return;
+      }
+
+      // Remove the deleted listing from the list
+      setUserListings((prev) => prev.filter((listing) => listing._id !== listingId));
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
@@ -310,12 +369,62 @@ export default function Profile() {
           Delete account
         </span>
         <span 
+          onClick={handleShowListings}
+          className='text-green-700 cursor-pointer hover:underline'
+        >
+          {showListings ? 'Hide listings' : 'Show listings'}
+        </span>
+        <span 
           onClick={handleSignOut}
           className='text-red-700 cursor-pointer hover:underline'
         >
           Sign out
         </span>
       </div>
+
+      {showListings && (
+        <div className='mt-5'>
+          <h2 className='text-2xl font-semibold mb-4'>Your listings</h2>
+          {listingsLoading && <p className='text-center text-slate-600'>Loading listings...</p>}
+          {listingsError && <p className='text-red-600 text-center'>{listingsError}</p>}
+          {!listingsLoading && !listingsError && userListings.length === 0 && (
+            <p className='text-center text-slate-600'>You have no listings yet.</p>
+          )}
+          {!listingsLoading && !listingsError && userListings.length > 0 && (
+            <div className='flex flex-col gap-4'>
+              {userListings.map((listing) => (
+                <div
+                  key={listing._id}
+                  className='flex items-center justify-between p-3 border border-gray-300 rounded-lg hover:shadow-lg transition-shadow'
+                >
+                  <div className='flex items-center gap-4 flex-1'>
+                    <img
+                      src={listing.imageUrls[0]}
+                      alt={listing.name}
+                      className='w-20 h-20 object-cover rounded-lg'
+                    />
+                    <p className='text-slate-700 font-semibold flex-1'>{listing.name}</p>
+                  </div>
+                  <div className='flex gap-2'>
+                    <button
+                      onClick={() => navigate(`/update-listing/${listing._id}`)}
+                      className='text-green-700 hover:underline uppercase text-sm'
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleListingDelete(listing._id)}
+                      className='text-red-700 hover:underline uppercase text-sm'
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
