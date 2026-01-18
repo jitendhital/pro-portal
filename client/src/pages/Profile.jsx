@@ -439,7 +439,7 @@ export default function Profile() {
                       className='w-20 h-20 object-cover rounded-lg'
                     />
                     <p 
-                      onClick={() => navigate(`/update-listing/${listing._id}`)}
+                      onClick={() => navigate(`/listing/${listing._id}`)}
                       className='text-slate-700 font-semibold flex-1 cursor-pointer hover:underline'
                     >
                       {listing.name}

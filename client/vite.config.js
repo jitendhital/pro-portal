@@ -9,7 +9,15 @@ export default defineConfig({
     react(),
   ],
   optimizeDeps: {
-    include: ['redux-persist/lib/storage']
+    include: [
+      'redux-persist/lib/storage', 
+      'swiper', 
+      'swiper/react', 
+      'swiper/modules',
+      'react',
+      'react-dom'
+    ],
+    exclude: []
   },
   server: {
     proxy: {
