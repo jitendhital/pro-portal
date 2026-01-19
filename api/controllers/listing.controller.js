@@ -9,8 +9,8 @@ export const createListing = async (req, res, next) => {
       userRef: req.user.id,
     };
 
-    // Validate required fields
-    const requiredFields = ['name', 'description', 'address', 'regularPrice', 'discountPrice', 'bathrooms', 'bedrooms', 'furnished', 'parking', 'type', 'offer', 'imageUrls'];
+    // Validate required fields (discountPrice is only required if offer is true)
+    const requiredFields = ['name', 'description', 'address', 'regularPrice', 'bathrooms', 'bedrooms', 'furnished', 'parking', 'type', 'offer', 'imageUrls'];
     const missingFields = requiredFields.filter(field => !listingData[field] && listingData[field] !== false);
     
     if (missingFields.length > 0) {
@@ -19,19 +19,30 @@ export const createListing = async (req, res, next) => {
 
     // Convert price fields to numbers
     const regularPrice = parseFloat(listingData.regularPrice);
-    const discountPrice = parseFloat(listingData.discountPrice);
-
+    
     // Validate price fields
     if (isNaN(regularPrice) || regularPrice <= 0) {
       return next(errorHandler(400, 'Regular price must be greater than 0'));
     }
 
-    if (isNaN(discountPrice) || discountPrice < 0) {
-      return next(errorHandler(400, 'Discount price cannot be negative'));
-    }
+    // discountPrice is only required and validated if offer is true
+    let discountPrice = 0;
+    if (listingData.offer) {
+      if (listingData.discountPrice === undefined || listingData.discountPrice === null || listingData.discountPrice === '') {
+        return next(errorHandler(400, 'Discount price is required when offer is enabled'));
+      }
+      discountPrice = parseFloat(listingData.discountPrice);
+      
+      if (isNaN(discountPrice) || discountPrice < 0) {
+        return next(errorHandler(400, 'Discount price must be a valid non-negative number'));
+      }
 
-    if (listingData.offer && discountPrice >= regularPrice) {
-      return next(errorHandler(400, 'Discount price must be less than regular price when offer is true'));
+      if (discountPrice >= regularPrice) {
+        return next(errorHandler(400, 'Discount price must be less than regular price when offer is true'));
+      }
+    } else {
+      // If offer is false, set discountPrice to 0
+      discountPrice = 0;
     }
 
     // Convert and validate numeric fields
@@ -126,17 +137,39 @@ export const updateListing = async (req, res, next) => {
       }
     }
 
-    if (updateData.discountPrice !== undefined) {
+    // Handle discountPrice based on offer status
+    if (updateData.offer !== undefined) {
+      if (updateData.offer) {
+        // If offer is true, discountPrice is required
+        if (updateData.discountPrice === undefined || updateData.discountPrice === null || updateData.discountPrice === '') {
+          return next(errorHandler(400, 'Discount price is required when offer is enabled'));
+        }
+        updateData.discountPrice = parseFloat(updateData.discountPrice);
+        if (isNaN(updateData.discountPrice) || updateData.discountPrice < 0) {
+          return next(errorHandler(400, 'Discount price must be a valid non-negative number'));
+        }
+        // Validate discount price relationship with regular price
+        const regularPriceToCheck = updateData.regularPrice !== undefined ? updateData.regularPrice : listing.regularPrice;
+        if (updateData.discountPrice >= regularPriceToCheck) {
+          return next(errorHandler(400, 'Discount price must be less than regular price when offer is true'));
+        }
+      } else {
+        // If offer is false, set discountPrice to 0
+        updateData.discountPrice = 0;
+      }
+    } else if (updateData.discountPrice !== undefined) {
+      // If only discountPrice is being updated (not offer), validate it
       updateData.discountPrice = parseFloat(updateData.discountPrice);
       if (isNaN(updateData.discountPrice) || updateData.discountPrice < 0) {
-        return next(errorHandler(400, 'Discount price cannot be negative'));
+        return next(errorHandler(400, 'Discount price must be a valid non-negative number'));
       }
-    }
-
-    // Validate discount price if offer is true
-    if (updateData.offer && updateData.discountPrice !== undefined && updateData.regularPrice !== undefined) {
-      if (updateData.discountPrice >= updateData.regularPrice) {
-        return next(errorHandler(400, 'Discount price must be less than regular price when offer is true'));
+      // If offer is currently true, validate the relationship
+      const currentOffer = listing.offer;
+      if (currentOffer) {
+        const regularPriceToCheck = updateData.regularPrice !== undefined ? updateData.regularPrice : listing.regularPrice;
+        if (updateData.discountPrice >= regularPriceToCheck) {
+          return next(errorHandler(400, 'Discount price must be less than regular price when offer is true'));
+        }
       }
     }
 

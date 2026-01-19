@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import { FaBed, FaBath } from 'react-icons/fa';
+import { FaBed, FaBath, FaMapMarkerAlt } from 'react-icons/fa';
 
 export default function ListingItem({ listing }) {
   return (
     <div className='bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]'>
       <Link to={`/listing/${listing._id}`}>
         <img
-          src={listing.imageUrls[0]}
+          src={listing.imageUrls?.[0] || ''}
           alt={listing.name}
           className='h-[320px] sm:h-[220px] w-full object-cover hover:scale-105 transition-scale duration-300'
         />
@@ -15,6 +15,7 @@ export default function ListingItem({ listing }) {
             {listing.name}
           </p>
           <div className='flex items-center gap-1'>
+            <FaMapMarkerAlt className='text-green-700 flex-shrink-0' />
             <p className='text-sm text-gray-600 truncate w-full'>
               {listing.address}
             </p>

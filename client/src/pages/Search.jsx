@@ -29,33 +29,38 @@ export default function Search() {
     const sortFromUrl = urlParams.get('sort');
     const orderFromUrl = urlParams.get('order');
 
-    if (
-      searchTermFromUrl ||
-      typeFromUrl ||
-      parkingFromUrl ||
-      furnishedFromUrl ||
-      offerFromUrl ||
-      sortFromUrl ||
-      orderFromUrl
-    ) {
-      setSidebardata({
-        searchTerm: searchTermFromUrl || '',
-        type: typeFromUrl || 'all',
-        parking: parkingFromUrl === 'true',
-        furnished: furnishedFromUrl === 'true',
-        offer: offerFromUrl === 'true',
-        sort: sortFromUrl || 'createdAt',
-        order: orderFromUrl || 'desc',
-      });
-    }
+    // Update sidebar data from URL params if they exist, otherwise use defaults
+    setSidebardata({
+      searchTerm: searchTermFromUrl || '',
+      type: typeFromUrl || 'all',
+      parking: parkingFromUrl === 'true',
+      furnished: furnishedFromUrl === 'true',
+      offer: offerFromUrl === 'true',
+      sort: sortFromUrl || 'createdAt',
+      order: orderFromUrl || 'desc',
+    });
 
     const fetchListings = async () => {
       setLoading(true);
       setShowMore(false);
-      const searchQuery = urlParams.toString();
+      
+      // Build query params with default values if not in URL
+      const queryParams = new URLSearchParams();
+      if (searchTermFromUrl) queryParams.set('searchTerm', searchTermFromUrl);
+      if (typeFromUrl && typeFromUrl !== 'all') queryParams.set('type', typeFromUrl);
+      if (parkingFromUrl === 'true') queryParams.set('parking', 'true');
+      if (furnishedFromUrl === 'true') queryParams.set('furnished', 'true');
+      if (offerFromUrl === 'true') queryParams.set('offer', 'true');
+      queryParams.set('sort', sortFromUrl || 'createdAt');
+      queryParams.set('order', orderFromUrl || 'desc');
+      queryParams.set('limit', '11'); // Set limit to 11
+      
+      const searchQuery = queryParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
-      if (data.length > 8) {
+      
+      // Show "Show more" button if we got 11 listings (indicating there might be more)
+      if (data.length >= 11) {
         setShowMore(true);
       } else {
         setShowMore(false);
@@ -115,12 +120,27 @@ export default function Search() {
   const onShowMoreClick = async () => {
     const numberOfListings = listings.length;
     const startIndex = numberOfListings;
+    
+    // Build query params
+    const queryParams = new URLSearchParams();
     const urlParams = new URLSearchParams(location.search);
-    urlParams.set('startIndex', startIndex);
-    const searchQuery = urlParams.toString();
+    
+    if (urlParams.get('searchTerm')) queryParams.set('searchTerm', urlParams.get('searchTerm'));
+    if (urlParams.get('type') && urlParams.get('type') !== 'all') queryParams.set('type', urlParams.get('type'));
+    if (urlParams.get('parking') === 'true') queryParams.set('parking', 'true');
+    if (urlParams.get('furnished') === 'true') queryParams.set('furnished', 'true');
+    if (urlParams.get('offer') === 'true') queryParams.set('offer', 'true');
+    queryParams.set('sort', urlParams.get('sort') || 'createdAt');
+    queryParams.set('order', urlParams.get('order') || 'desc');
+    queryParams.set('startIndex', startIndex);
+    queryParams.set('limit', '11');
+    
+    const searchQuery = queryParams.toString();
     const res = await fetch(`/api/listing/get?${searchQuery}`);
     const data = await res.json();
-    if (data.length < 9) {
+    
+    // Hide "Show more" button if we got less than 11 listings (no more to load)
+    if (data.length < 11) {
       setShowMore(false);
     }
     setListings([...listings, ...data]);
