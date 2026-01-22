@@ -27,18 +27,18 @@ export default function Profile() {
 
   const handleFileUpload = async (file) => {
     if (!file) return;
-    
+
     setUploading(true);
     setFileUploadError(null);
     dispatch(updateUserStart());
-    
+
     try {
       if (!currentUser?._id) {
         throw new Error('User ID not found');
       }
-      
+
       const imageUrl = await uploadImage(file, 'avatars', currentUser._id);
-      
+
       // Update the user's avatar in the backend
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: 'PUT',
@@ -52,7 +52,7 @@ export default function Profile() {
       // Handle empty or non-JSON responses
       const text = await res.text();
       let data = {};
-      
+
       if (text) {
         try {
           data = JSON.parse(text);
@@ -61,7 +61,7 @@ export default function Profile() {
           throw new Error('Invalid response from server');
         }
       }
-      
+
       if (!res.ok || data.success === false) {
         throw new Error(data.message || 'Failed to update avatar');
       }
@@ -102,10 +102,10 @@ export default function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUpdateSuccess(false);
-    
+
     try {
       dispatch(updateUserStart());
-      
+
       // Only send fields that have values
       const updateData = {};
       if (formData.username && formData.username !== currentUser.username) {
@@ -135,7 +135,7 @@ export default function Profile() {
 
       const text = await res.text();
       let data = {};
-      
+
       if (text) {
         try {
           data = JSON.parse(text);
@@ -169,7 +169,7 @@ export default function Profile() {
 
       const text = await res.text();
       let data = {};
-      
+
       if (text) {
         try {
           data = JSON.parse(text);
@@ -203,7 +203,7 @@ export default function Profile() {
     try {
       setDeletingAccount(true);
       dispatch(deleteUserStart());
-      
+
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
         headers: {
@@ -214,7 +214,7 @@ export default function Profile() {
 
       const text = await res.text();
       let data = {};
-      
+
       if (text) {
         try {
           data = JSON.parse(text);
@@ -288,7 +288,7 @@ export default function Profile() {
 
       const text = await res.text();
       let data = {};
-      
+
       if (text) {
         try {
           data = JSON.parse(text);
@@ -346,7 +346,7 @@ export default function Profile() {
             Uploading: {filePerc}%
           </div>
         )}
-        
+
         <input
           type='text'
           placeholder='username'
@@ -372,10 +372,14 @@ export default function Profile() {
           className='border p-3 rounded-lg'
         />
 
-        <button 
+        <button
           type='submit'
           disabled={loading}
+<<<<<<< HEAD
           className='bg-purple-600 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
+=======
+          className='bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg p-3 uppercase hover:from-emerald-600 hover:to-teal-700 disabled:opacity-80 shadow-lg shadow-emerald-500/30'
+>>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
         >
           {loading ? 'Updating...' : 'Update'}
         </button>
@@ -387,29 +391,34 @@ export default function Profile() {
       {updateSuccess && (
         <p className='text-green-600 text-center mt-3'>Profile updated successfully!</p>
       )}
-      
+
       <button
+<<<<<<< HEAD
         onClick={() => navigate('/create')}
         className='w-full bg-purple-600 text-white rounded-lg p-3 uppercase hover:opacity-95 mt-4'
+=======
+        onClick={() => navigate('/create-listing')}
+        className='w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg p-3 uppercase hover:from-teal-700 hover:to-emerald-700 mt-4 shadow-lg shadow-emerald-500/30'
+>>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
       >
         Create Listing
       </button>
-      
+
       <div className='flex justify-between mt-5'>
-        <span 
+        <span
           onClick={handleDeleteAccount}
           disabled={deletingAccount}
           className={`text-red-700 cursor-pointer hover:underline ${deletingAccount ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {deletingAccount ? 'Deleting...' : 'Delete account'}
         </span>
-        <span 
+        <span
           onClick={handleShowListings}
-          className='text-green-700 cursor-pointer hover:underline'
+          className='text-emerald-600 cursor-pointer hover:underline font-medium'
         >
           {showListings ? 'Hide listings' : 'Show listings'}
         </span>
-        <span 
+        <span
           onClick={handleSignOut}
           className='text-red-700 cursor-pointer hover:underline'
         >
@@ -438,7 +447,7 @@ export default function Profile() {
                       alt={listing.name}
                       className='w-20 h-20 object-cover rounded-lg'
                     />
-                    <p 
+                    <p
                       onClick={() => navigate(`/listing/${listing._id}`)}
                       className='text-slate-700 font-semibold flex-1 cursor-pointer hover:underline'
                     >

@@ -3,7 +3,7 @@ import { FaBed, FaBath, FaMapMarkerAlt } from 'react-icons/fa';
 
 export default function ListingItem({ listing }) {
   return (
-    <div className='bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]'>
+    <div className='bg-white shadow-md hover:shadow-xl transition-all overflow-hidden rounded-2xl w-full sm:w-[330px] border border-slate-100 hover:border-emerald-200'>
       <Link to={`/listing/${listing._id}`}>
         <img
           src={listing.imageUrls?.[0] || ''}
@@ -15,7 +15,7 @@ export default function ListingItem({ listing }) {
             {listing.name}
           </p>
           <div className='flex items-center gap-1'>
-            <FaMapMarkerAlt className='text-green-700 flex-shrink-0' />
+            <FaMapMarkerAlt className='text-emerald-500 flex-shrink-0' />
             <p className='text-sm text-gray-600 truncate w-full'>
               {listing.address}
             </p>
@@ -23,7 +23,7 @@ export default function ListingItem({ listing }) {
           <p className='text-sm text-gray-500 line-clamp-2'>
             {listing.description}
           </p>
-          <p className='text-slate-500 mt-2 font-semibold'>
+          <p className='text-emerald-600 mt-2 font-semibold'>
             $
             {listing.offer
               ? listing.discountPrice.toLocaleString('en-US')

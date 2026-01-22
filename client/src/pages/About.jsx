@@ -133,13 +133,21 @@ export default function About() {
           <div className='flex gap-4 flex-wrap'>
             <Link
               to='/search'
+<<<<<<< HEAD
               className='bg-purple-600 text-white px-6 py-3 rounded-lg hover:opacity-95 transition-opacity'
+=======
+              className='bg-slate-700 text-white px-6 py-3 rounded-lg hover:opacity-95 transition-opacity'
+>>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
             >
               Browse Properties
             </Link>
             <Link
               to='/signUp'
+<<<<<<< HEAD
               className='bg-purple-600 text-white px-6 py-3 rounded-lg hover:opacity-95 transition-opacity'
+=======
+              className='bg-blue-600 text-white px-6 py-3 rounded-lg hover:opacity-95 transition-opacity'
+>>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
             >
               Create Account
             </Link>

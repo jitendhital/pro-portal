@@ -4,18 +4,38 @@ import { errorHandler } from '../utils/errors.js';
 
 export const createBooking = async (req, res, next) => {
   try {
-    const { propertyId, date, timeSlot, message } = req.body;
+    const { 
+      propertyId, 
+      date, 
+      timeSlot, 
+      message, 
+      guests, 
+      bbqEnabled, 
+      chickenKg, 
+      muttonKg, 
+      fishKg, 
+      campfireEnabled, 
+      soundSystemEnabled, 
+      totalPrice 
+    } = req.body;
     const buyerId = req.user.id;
 
     // Validate required fields
-    if (!propertyId || !date || !timeSlot) {
-      return next(errorHandler(400, 'Property ID, date, and time slot are required'));
+    if (!propertyId || !date || totalPrice === undefined) {
+      return next(errorHandler(400, 'Property ID, date, and total price are required'));
     }
 
-    // Verify property exists
+    // For regular bookings, timeSlot is required
+    // For night-stay bookings, timeSlot is optional
     const property = await Listing.findById(propertyId);
     if (!property) {
       return next(errorHandler(404, 'Property not found'));
+    }
+
+    const isNightStay = property.listingSubType === 'night-stay' || (property.type === 'rent' && property.bbqEnabled);
+    
+    if (!isNightStay && !timeSlot) {
+      return next(errorHandler(400, 'Time slot is required for regular bookings'));
     }
 
     // Check if buyer is trying to book their own property
@@ -32,14 +52,47 @@ export const createBooking = async (req, res, next) => {
       return next(errorHandler(400, 'Booking date must be in the future'));
     }
 
+    // Check for existing bookings on the same date/timeSlot
+    if (timeSlot) {
+      const existingBooking = await Booking.findOne({
+        propertyId,
+        date: bookingDate,
+        timeSlot,
+        status: { $in: ['pending', 'approved'] },
+      });
+
+      if (existingBooking) {
+        return next(errorHandler(400, 'This time slot is already booked'));
+      }
+    } else {
+      // For night-stay, check if date is already booked
+      const existingBooking = await Booking.findOne({
+        propertyId,
+        date: bookingDate,
+        status: { $in: ['pending', 'approved'] },
+      });
+
+      if (existingBooking) {
+        return next(errorHandler(400, 'This date is already booked'));
+      }
+    }
+
     // Create booking
     const booking = await Booking.create({
       propertyId,
       buyerId,
       sellerId: property.userRef,
       date: bookingDate,
-      timeSlot,
+      timeSlot: timeSlot || null,
       message: message || '',
+      guests: guests || 1,
+      bbqEnabled: bbqEnabled || false,
+      chickenKg: chickenKg || 0,
+      muttonKg: muttonKg || 0,
+      fishKg: fishKg || 0,
+      campfireEnabled: campfireEnabled || false,
+      soundSystemEnabled: soundSystemEnabled || false,
+      totalPrice,
       status: 'pending',
     });
 
@@ -108,7 +161,7 @@ export const getBookings = async (req, res, next) => {
 export const updateBookingStatus = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
-    const { status } = req.body;
+    const { status, sellerNote } = req.body;
     const userId = req.user.id;
 
     // Validate status
@@ -127,8 +180,16 @@ export const updateBookingStatus = async (req, res, next) => {
       return next(errorHandler(403, 'You can only update bookings for your own properties'));
     }
 
+    // Can only update pending bookings
+    if (booking.status !== 'pending') {
+      return next(errorHandler(400, 'Can only update pending bookings'));
+    }
+
     // Update booking status
     booking.status = status;
+    if (sellerNote) {
+      booking.sellerNote = sellerNote;
+    }
     await booking.save();
 
     const { __v, ...bookingResponse } = booking._doc;
@@ -184,3 +245,36 @@ export const getBooking = async (req, res, next) => {
   }
 };
 
+// Cancel a booking (by buyer)
+export const cancelBooking = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = req.user.id;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return next(errorHandler(404, 'Booking not found'));
+    }
+
+    // Only the buyer can cancel their booking
+    if (booking.buyerId !== userId) {
+      return next(errorHandler(403, 'You can only cancel your own bookings'));
+    }
+
+    // Can only cancel pending or approved bookings
+    if (!['pending', 'approved'].includes(booking.status)) {
+      return next(errorHandler(400, 'Cannot cancel this booking'));
+    }
+
+    booking.status = 'cancelled';
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Booking cancelled successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

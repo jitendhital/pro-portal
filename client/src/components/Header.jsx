@@ -37,7 +37,7 @@ export default function Header() {
             <span className="text-purple-700">Estate</span>
           </h1>
         </Link>
-        
+
         {/* Search Form */}
         <form onSubmit={handleSubmit} className="bg-purple-50 p-3 rounded-lg flex items-center border border-purple-200">
           <input
@@ -52,10 +52,9 @@ export default function Header() {
             <FaSearch className="text-purple-600" />
           </button>
         </form>
-        
+
         {/* Navigation Links */}
-        <ul className="flex gap-4">
-          {/* These links are hidden on mobile (hidden) and shown on screens larger than 'sm' */}
+        <ul className="flex gap-4 items-center">
           <Link to="/">
             <li className="hidden sm:inline text-purple-700 hover:text-purple-900 hover:underline transition-colors font-medium">
               Home
@@ -91,9 +90,9 @@ export default function Header() {
               <li className=' text-purple-700 hover:text-purple-900 hover:underline transition-colors font-medium'> Sign in</li>
             </Link>
           )}
-          
         </ul>
       </div>
     </header>
   );
 }
+

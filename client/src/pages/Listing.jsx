@@ -12,6 +12,7 @@ import {
   FaMapMarkerAlt,
   FaParking,
   FaShare,
+  FaCalendarAlt,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
 import BookVisit from '../components/BookVisit';
@@ -43,15 +44,15 @@ export default function Listing() {
         const res = await fetch(`/api/listing/get/${params.listingId}`, {
           credentials: 'include',
         });
-        
+
         const data = await res.json();
-        
+
         if (data.success === false) {
           setError(true);
           setLoading(false);
           return;
         }
-        
+
         setListing(data.listing);
         setLoading(false);
         setError(false);
@@ -127,8 +128,8 @@ export default function Listing() {
       )}
       {listing && !loading && !error && (
         <div className='w-full'>
-          <Swiper 
-            modules={[Navigation]} 
+          <Swiper
+            modules={[Navigation]}
             navigation
             className='w-full'
             style={{ width: '100%', height: '550px' }}
