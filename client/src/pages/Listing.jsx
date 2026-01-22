@@ -14,6 +14,13 @@ import {
   FaShare,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
+import BookVisit from '../components/BookVisit';
+import NightStayBookingModal from '../components/NightStayBookingModal';
+import { SkeletonLoader } from '../components/SkeletonLoader';
+import ShareButton from '../components/ShareButton';
+import { useFavorites } from '../hooks/useFavorites';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import SimilarProperties from '../components/SimilarProperties';
 
 export default function Listing() {
   const [listing, setListing] = useState(null);
@@ -21,8 +28,13 @@ export default function Listing() {
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState(false);
+  const [showBookVisit, setShowBookVisit] = useState(false);
+  const [showNightStayBooking, setShowNightStayBooking] = useState(false);
+  const [unavailableDates, setUnavailableDates] = useState([]);
+  const [allListings, setAllListings] = useState([]);
   const params = useParams();
   const { currentUser } = useSelector((state) => state.user);
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -43,19 +55,75 @@ export default function Listing() {
         setListing(data.listing);
         setLoading(false);
         setError(false);
+        
+        // Fetch unavailable dates for night-stay listings
+        if (data.listing.listingSubType === 'night-stay' || (data.listing.type === 'rent' && data.listing.bbqEnabled)) {
+          fetchUnavailableDates(data.listing._id);
+        }
       } catch (error) {
         setError(true);
         setLoading(false);
       }
     };
+    
+    const fetchUnavailableDates = async (listingId) => {
+      try {
+        // Fetch bookings for this property (as seller)
+        const res = await fetch(`/api/booking/get?type=seller`, {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.success && data.bookings) {
+          // Filter bookings for this property and extract dates
+          const dates = data.bookings
+            .filter((b) => b.propertyId === listingId || b.propertyId?._id === listingId)
+            .filter((b) => b.status === 'approved' || b.status === 'pending')
+            .map((b) => {
+              const date = b.date;
+              return typeof date === 'string' ? date.split('T')[0] : new Date(date).toISOString().split('T')[0];
+            });
+          setUnavailableDates([...new Set(dates)]); // Remove duplicates
+        }
+      } catch (error) {
+        console.error('Error fetching unavailable dates:', error);
+      }
+    };
+    
     fetchListing();
+    
+    // Fetch all listings for similar properties recommendation
+    const fetchAllListings = async () => {
+      try {
+        const res = await fetch('/api/listing/get?limit=100');
+        const data = await res.json();
+        if (data && Array.isArray(data)) {
+          setAllListings(data);
+        }
+      } catch (error) {
+        console.error('Error fetching all listings:', error);
+      }
+    };
+    
+    fetchAllListings();
   }, [params.listingId]);
 
   return (
     <main className='w-full'>
-      {loading && <p className='text-center my-7 text-2xl'>Loading...</p>}
+      {loading && (
+        <div className='max-w-4xl mx-auto p-3 my-7'>
+          <SkeletonLoader type="listing-detail" />
+        </div>
+      )}
       {error && (
-        <p className='text-center my-7 text-2xl'>Something went wrong!</p>
+        <div className='text-center my-7'>
+          <p className='text-2xl text-red-600 mb-4'>Something went wrong!</p>
+          <button
+            onClick={() => window.location.reload()}
+            className='bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700'
+          >
+            Reload Page
+          </button>
+        </div>
       )}
       {listing && !loading && !error && (
         <div className='w-full'>
@@ -79,23 +147,23 @@ export default function Listing() {
               </SwiperSlide>
             ))}
           </Swiper>
-          <div className='fixed top-[13%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-slate-100 cursor-pointer'>
-            <FaShare
-              className='text-slate-500'
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setCopied(true);
-                setTimeout(() => {
-                  setCopied(false);
-                }, 2000);
-              }}
-            />
+          {/* Action Buttons - Share and Favorite */}
+          <div className='fixed top-[13%] right-[3%] z-10 flex flex-col gap-3'>
+            <button
+              onClick={() => toggleFavorite(listing._id)}
+              className='border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg hover:bg-purple-50 transition-colors cursor-pointer'
+              aria-label={isFavorite(listing._id) ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              {isFavorite(listing._id) ? (
+                <FaHeart className='text-red-500 text-xl' />
+              ) : (
+                <FaRegHeart className='text-purple-600 text-xl' />
+              )}
+            </button>
+            <div className='border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg hover:bg-purple-50 transition-colors cursor-pointer'>
+              <ShareButton listingId={listing._id} listingName={listing.name} />
+            </div>
           </div>
-          {copied && (
-            <p className='fixed top-[23%] right-[5%] z-10 rounded-md bg-slate-100 p-2'>
-              Link copied!
-            </p>
-          )}
           <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
             <p className='text-2xl font-semibold'>
               {listing.name} - ${' '}
@@ -108,13 +176,23 @@ export default function Listing() {
               <FaMapMarkerAlt className='text-green-700' />
               {listing.address}
             </p>
-            <div className='flex gap-4'>
-              <p className='bg-red-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
+            <div className='flex gap-4 flex-wrap'>
+              <p className={`w-full max-w-[200px] text-white text-center p-1 rounded-md ${
+                listing.listingSubType === 'night-stay' 
+                  ? 'bg-purple-600' 
+                  : listing.type === 'rent' 
+                  ? 'bg-red-900' 
+                  : 'bg-blue-900'
+              }`}>
+                {listing.listingSubType === 'night-stay' 
+                  ? '🌙 Night-Stay Experience' 
+                  : listing.type === 'rent' 
+                  ? 'For Rent' 
+                  : 'For Sale'}
               </p>
               {listing.offer && (
                 <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                  ${(+listing.regularPrice - +listing.discountPrice).toLocaleString('en-US')} OFF
+                  Rs {(+listing.regularPrice - +listing.discountPrice).toLocaleString('en-US')} OFF
                 </p>
               )}
             </div>
@@ -144,16 +222,51 @@ export default function Listing() {
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
               </li>
             </ul>
-            {currentUser && listing.userRef !== currentUser._id && !contact && (
-              <button
-                onClick={() => setContact(true)}
-                className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'
-              >
-                Contact landlord
-              </button>
+            {currentUser && listing.userRef !== currentUser._id && !contact && !showBookVisit && !showNightStayBooking && (
+              <div className='flex gap-3 flex-wrap'>
+                {/* Show Night-Stay booking button if it's a night-stay listing */}
+                {(listing.listingSubType === 'night-stay' || (listing.type === 'rent' && listing.bbqEnabled)) ? (
+                  <button
+                    onClick={() => setShowNightStayBooking(true)}
+                    className='bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all'
+                  >
+                    🌙 Book One-Night Stay
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setShowBookVisit(true)}
+                      className='bg-purple-600 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1'
+                    >
+                      📅 Book a Visit
+                    </button>
+                    <button
+                      onClick={() => setContact(true)}
+                      className='bg-purple-600 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1'
+                    >
+                      Contact landlord
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+            {showBookVisit && <BookVisit listing={listing} onClose={() => setShowBookVisit(false)} />}
+            {showNightStayBooking && (
+              <NightStayBookingModal
+                listing={listing}
+                onClose={() => setShowNightStayBooking(false)}
+                unavailableDates={unavailableDates}
+              />
             )}
             {contact && <Contact listing={listing} />}
           </div>
+        </div>
+      )}
+      
+      {/* Similar Properties Section - Uses Recommendation Algorithm */}
+      {listing && allListings.length > 0 && (
+        <div className="max-w-6xl mx-auto p-3">
+          <SimilarProperties currentListing={listing} allListings={allListings} />
         </div>
       )}
     </main>

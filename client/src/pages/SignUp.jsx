@@ -64,7 +64,7 @@ export default function SignUp() {
       <div className="w-full max-w-md bg-white/95 backdrop-blur rounded-2xl shadow-xl border border-slate-200">
         {/* Top pill/title */}
         <div className="px-8 pt-6 pb-4">
-          <div className="inline-block px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold text-sm">Signup</div>
+          <div className="inline-block px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold text-sm">Signup</div>
         </div>
 
         <div className="px-8 pb-8">
@@ -80,7 +80,7 @@ export default function SignUp() {
                 name="username"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="your username"
                 onChange={handleChange}
               />
@@ -93,7 +93,7 @@ export default function SignUp() {
                 name="email"
                 type="email"
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="you@example.com"
                 onChange={handleChange}
               />
@@ -106,7 +106,7 @@ export default function SignUp() {
                 name="password"
                 type="password"
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="Create a strong password"
                 onChange={handleChange}
               />
@@ -114,7 +114,7 @@ export default function SignUp() {
 
             <button
               type="submit"
-              className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white font-semibold px-4 py-2 shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-purple-600 text-white font-semibold px-4 py-2 shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
               disabled={loading}
             >
               {loading ? 'Signing Up...' : 'Sign Up'}
@@ -130,7 +130,7 @@ export default function SignUp() {
 
            <OAuth/>
           <p className="mt-5 text-center text-sm text-slate-500">
-            Have an account? <Link to="/signIn" className="font-semibold text-indigo-600 hover:underline">Sign in</Link>
+            Have an account? <Link to="/signIn" className="font-semibold text-purple-600 hover:underline">Sign in</Link>
           </p>
 
           <p className="mt-4 text-xs text-slate-400 text-center">

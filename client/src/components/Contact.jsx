@@ -60,7 +60,7 @@ export default function Contact({ listing }) {
             href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(landlord.email)}&su=${encodeURIComponent(`Regarding ${listing.name}`)}&body=${encodeURIComponent(message)}`}
             target='_blank'
             rel='noopener noreferrer'
-            className='bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95 w-full block no-underline'
+            className='bg-purple-600 text-white text-center p-3 uppercase rounded-lg hover:opacity-95 w-full block no-underline'
             style={{ textDecoration: 'none' }}
           >
             Send Message

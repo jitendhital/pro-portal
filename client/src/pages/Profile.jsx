@@ -375,7 +375,7 @@ export default function Profile() {
         <button 
           type='submit'
           disabled={loading}
-          className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
+          className='bg-purple-600 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
         >
           {loading ? 'Updating...' : 'Update'}
         </button>
@@ -389,8 +389,8 @@ export default function Profile() {
       )}
       
       <button
-        onClick={() => navigate('/create-listing')}
-        className='w-full bg-green-700 text-white rounded-lg p-3 uppercase hover:opacity-95 mt-4'
+        onClick={() => navigate('/create')}
+        className='w-full bg-purple-600 text-white rounded-lg p-3 uppercase hover:opacity-95 mt-4'
       >
         Create Listing
       </button>
