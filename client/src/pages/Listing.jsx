@@ -12,8 +12,10 @@ import {
   FaMapMarkerAlt,
   FaParking,
   FaShare,
+  FaCalendarAlt,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
+import BookVisitModal from '../components/BookVisitModal';
 
 export default function Listing() {
   const [listing, setListing] = useState(null);
@@ -21,6 +23,7 @@ export default function Listing() {
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState(false);
+  const [showBookModal, setShowBookModal] = useState(false);
   const params = useParams();
   const { currentUser } = useSelector((state) => state.user);
 
@@ -31,15 +34,15 @@ export default function Listing() {
         const res = await fetch(`/api/listing/get/${params.listingId}`, {
           credentials: 'include',
         });
-        
+
         const data = await res.json();
-        
+
         if (data.success === false) {
           setError(true);
           setLoading(false);
           return;
         }
-        
+
         setListing(data.listing);
         setLoading(false);
         setError(false);
@@ -59,8 +62,8 @@ export default function Listing() {
       )}
       {listing && !loading && !error && (
         <div className='w-full'>
-          <Swiper 
-            modules={[Navigation]} 
+          <Swiper
+            modules={[Navigation]}
             navigation
             className='w-full'
             style={{ width: '100%', height: '550px' }}
@@ -144,17 +147,41 @@ export default function Listing() {
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
               </li>
             </ul>
-            {currentUser && listing.userRef !== currentUser._id && !contact && (
-              <button
-                onClick={() => setContact(true)}
-                className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'
-              >
-                Contact landlord
-              </button>
+            {currentUser && listing.userRef !== currentUser._id && (
+              <div className='flex flex-col sm:flex-row gap-3'>
+                {!contact && (
+                  <>
+                    <button
+                      onClick={() => setShowBookModal(true)}
+                      className='flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 
+                               text-white rounded-lg uppercase hover:from-emerald-600 hover:to-teal-700 p-3 
+                               shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl'
+                    >
+                      <FaCalendarAlt />
+                      Book a Visit
+                    </button>
+                    <button
+                      onClick={() => setContact(true)}
+                      className='flex-1 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'
+                    >
+                      Contact landlord
+                    </button>
+                  </>
+                )}
+              </div>
             )}
             {contact && <Contact listing={listing} />}
           </div>
         </div>
+      )}
+
+      {/* Book Visit Modal */}
+      {showBookModal && (
+        <BookVisitModal
+          listing={listing}
+          onClose={() => setShowBookModal(false)}
+          onSuccess={() => setShowBookModal(false)}
+        />
       )}
     </main>
   );
