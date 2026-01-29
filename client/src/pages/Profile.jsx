@@ -375,11 +375,7 @@ export default function Profile() {
         <button
           type='submit'
           disabled={loading}
-<<<<<<< HEAD
           className='bg-purple-600 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
-=======
-          className='bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg p-3 uppercase hover:from-emerald-600 hover:to-teal-700 disabled:opacity-80 shadow-lg shadow-emerald-500/30'
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
         >
           {loading ? 'Updating...' : 'Update'}
         </button>
@@ -393,13 +389,8 @@ export default function Profile() {
       )}
 
       <button
-<<<<<<< HEAD
         onClick={() => navigate('/create')}
         className='w-full bg-purple-600 text-white rounded-lg p-3 uppercase hover:opacity-95 mt-4'
-=======
-        onClick={() => navigate('/create-listing')}
-        className='w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg p-3 uppercase hover:from-teal-700 hover:to-emerald-700 mt-4 shadow-lg shadow-emerald-500/30'
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
       >
         Create Listing
       </button>

@@ -60,11 +60,7 @@ export default function SignIn() {
       <div className="w-full max-w-md bg-white/95 backdrop-blur rounded-2xl shadow-xl border border-slate-200">
         {/* Top pill/title */}
         <div className="px-8 pt-6 pb-4">
-<<<<<<< HEAD
           <div className="inline-block px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold text-sm">
-=======
-          <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-sm">
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
             Sign In
           </div>
         </div>
@@ -83,11 +79,7 @@ export default function SignIn() {
                 name="email"
                 type="email"
                 required
-<<<<<<< HEAD
                 className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-=======
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
                 placeholder="you@example.com"
                 onChange={handleChange}
               />
@@ -102,11 +94,7 @@ export default function SignIn() {
                 name="password"
                 type="password"
                 required
-<<<<<<< HEAD
                 className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-=======
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
                 placeholder="Enter your password"
                 onChange={handleChange}
               />
@@ -114,11 +102,7 @@ export default function SignIn() {
 
             <button
               type="submit"
-<<<<<<< HEAD
               className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-purple-600 text-white font-semibold px-4 py-2 shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
-=======
-              className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold px-4 py-2 shadow-lg shadow-emerald-500/30 hover:from-emerald-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign In"}
@@ -134,11 +118,7 @@ export default function SignIn() {
           <OAuth />
           <p className="mt-5 text-center text-sm text-slate-500">
             Don't have an account?{" "}
-<<<<<<< HEAD
             <Link to="/signUp" className="font-semibold text-purple-600 hover:underline">
-=======
-            <Link to="/signUp" className="font-semibold text-emerald-600 hover:underline">
->>>>>>> fdfe698ed9ee8244061cf64cdccf894bda33e9f2
               Sign up
             </Link>
           </p>
