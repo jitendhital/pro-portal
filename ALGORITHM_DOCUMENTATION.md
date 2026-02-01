@@ -1,7 +1,7 @@
 # Property Recommendation Algorithm - Documentation
 
 ## Overview
-This document describes the **Property Recommendation & Matching Algorithm** implemented in the JitenEstate platform. This algorithm is designed to match user preferences with available properties using a weighted scoring system.
+This document describes the **Property Recommendation & Matching Algorithm** implemented in the HomeHive platform. This algorithm is designed to match user preferences with available properties using a weighted scoring system.
 
 ## Algorithm Type
 **Content-Based Filtering with Weighted Scoring**

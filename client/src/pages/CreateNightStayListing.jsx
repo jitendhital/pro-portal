@@ -69,6 +69,7 @@ export default function CreateNightStayListing() {
       regularPrice: parseFloat(wizardFormData.regularPrice),
       discountPrice: wizardFormData.offer ? parseFloat(wizardFormData.discountPrice) : 0,
       userRef: currentUser._id,
+      bbqRates: wizardFormData.bbqRates || { chicken: 700, mutton: 2000, fish: 1500 }, // Include custom rates
     };
 
     setLoading(true);
@@ -117,7 +118,7 @@ export default function CreateNightStayListing() {
         initialData={initialData}
         additionalSteps={nightStaySteps}
       />
-      
+
       {/* Floating Price Preview - will be shown when regularPrice is set */}
       {initialData?.regularPrice && (
         <div className="hidden lg:block fixed right-8 top-1/2 transform -translate-y-1/2 w-80 z-10">

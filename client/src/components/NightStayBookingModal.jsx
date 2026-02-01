@@ -38,7 +38,7 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
     setFishKg,
     calculations: bbqCalculations,
     rates: bbqRates,
-  } = useBBQCalculator(bbqEnabled);
+  } = useBBQCalculator(bbqEnabled, {}, listing.bbqRates || {});
 
   // Get min date (tomorrow)
   const getMinDate = () => {
@@ -140,12 +140,12 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
         addOns: {
           bbq: bbqEnabled
             ? {
-                enabled: true,
-                chickenKg,
-                muttonKg,
-                fishKg,
-                totalPrice: bbqCalculations.total,
-              }
+              enabled: true,
+              chickenKg,
+              muttonKg,
+              fishKg,
+              totalPrice: bbqCalculations.total,
+            }
             : { enabled: false },
           campfire: {
             enabled: campfireEnabled,
@@ -178,7 +178,7 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
       setBookingData(data.booking);
       setSubmitted(true);
       success('Booking request submitted successfully!');
-      
+
       // Navigate to booking summary after a short delay
       setTimeout(() => {
         if (data.booking._id) {
@@ -284,11 +284,10 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
                     }
                   }}
                   min={getMinDate()}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    selectedDate && isDateUnavailable(selectedDate)
-                      ? 'border-red-500'
-                      : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${selectedDate && isDateUnavailable(selectedDate)
+                    ? 'border-red-500'
+                    : 'border-gray-300'
+                    }`}
                   required
                 />
                 {selectedDate && isDateUnavailable(selectedDate) && (
@@ -328,8 +327,8 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-purple-800">Add-ons</h3>
 
-                {/* BBQ Service */}
-                {listing.bbqEnabled && (
+                {/* BBQ Service - Always available for rentals now */}
+                {(true) && (
                   <div className="border-2 border-purple-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -352,60 +351,66 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
 
                     {bbqEnabled && (
                       <div className="space-y-3 mt-4 pt-4 border-t border-purple-200">
-                        <div>
-                          <label className="block text-sm font-medium text-purple-700 mb-1">
-                            Chicken (Rs {bbqRates.chicken}/kg)
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.5"
-                              value={chickenKg}
-                              onChange={(e) => setChickenKg(parseFloat(e.target.value) || 0)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            />
-                            <div className="w-24 px-3 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold text-sm flex items-center justify-center">
-                              Rs {bbqCalculations.chickenPrice.toLocaleString()}
+                        {(listing.bbqAvailability?.isChickenAllowed !== false) && (
+                          <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-1">
+                              Chicken (Rs {bbqRates.chicken}/kg)
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={chickenKg}
+                                onChange={(e) => setChickenKg(parseFloat(e.target.value) || 0)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              />
+                              <div className="w-24 px-3 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold text-sm flex items-center justify-center">
+                                Rs {bbqCalculations.chickenPrice.toLocaleString()}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-purple-700 mb-1">
-                            Mutton (Rs {bbqRates.mutton}/kg)
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.5"
-                              value={muttonKg}
-                              onChange={(e) => setMuttonKg(parseFloat(e.target.value) || 0)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            />
-                            <div className="w-24 px-3 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold text-sm flex items-center justify-center">
-                              Rs {bbqCalculations.muttonPrice.toLocaleString()}
+                        )}
+                        {(listing.bbqAvailability?.isMuttonAllowed !== false) && (
+                          <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-1">
+                              Mutton (Rs {bbqRates.mutton}/kg)
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={muttonKg}
+                                onChange={(e) => setMuttonKg(parseFloat(e.target.value) || 0)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              />
+                              <div className="w-24 px-3 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold text-sm flex items-center justify-center">
+                                Rs {bbqCalculations.muttonPrice.toLocaleString()}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-purple-700 mb-1">
-                            Fish (Rs {bbqRates.fish}/kg)
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.5"
-                              value={fishKg}
-                              onChange={(e) => setFishKg(parseFloat(e.target.value) || 0)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            />
-                            <div className="w-24 px-3 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold text-sm flex items-center justify-center">
-                              Rs {bbqCalculations.fishPrice.toLocaleString()}
+                        )}
+                        {(listing.bbqAvailability?.isFishAllowed !== false) && (
+                          <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-1">
+                              Fish (Rs {bbqRates.fish}/kg)
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={fishKg}
+                                onChange={(e) => setFishKg(parseFloat(e.target.value) || 0)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              />
+                              <div className="w-24 px-3 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold text-sm flex items-center justify-center">
+                                Rs {bbqCalculations.fishPrice.toLocaleString()}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                         <div className="pt-3 border-t border-purple-200 flex justify-between items-center">
                           <span className="font-semibold text-purple-800">BBQ Total:</span>
                           <span className="text-xl font-bold text-purple-600">
@@ -417,8 +422,8 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
                   </div>
                 )}
 
-                {/* Campfire */}
-                {listing.campfireEnabled && (
+                {/* Campfire - Always available for now */}
+                {(true) && (
                   <div className="border-2 border-purple-200 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -443,8 +448,8 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
                   </div>
                 )}
 
-                {/* Sound System */}
-                {listing.soundSystemEnabled && (
+                {/* Sound System - Always available for now */}
+                {(true) && (
                   <div className="border-2 border-purple-200 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -489,14 +494,14 @@ export default function NightStayBookingModal({ listing, onClose, unavailableDat
                     </div>
                   )}
 
-                  {campfireEnabled && listing.campfirePrice > 0 && (
+                  {campfireEnabled && (
                     <div className="flex justify-between text-sm">
                       <span>Campfire:</span>
                       <span>Rs {parseFloat(listing.campfirePrice || 0).toLocaleString()}</span>
                     </div>
                   )}
 
-                  {soundSystemEnabled && listing.soundSystemPrice > 0 && (
+                  {soundSystemEnabled && (
                     <div className="flex justify-between text-sm">
                       <span>Sound System:</span>
                       <span>Rs {parseFloat(listing.soundSystemPrice || 0).toLocaleString()}</span>

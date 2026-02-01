@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FaUsers, FaClock, FaFire, FaMusic } from 'react-icons/fa';
 import { useBBQCalculator } from '../hooks/useBBQCalculator';
 
@@ -15,16 +15,16 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
       const [hours, minutes] = checkInTime.split(':').map(Number);
       const checkInDate = new Date();
       checkInDate.setHours(hours, minutes, 0, 0);
-      
+
       const checkOutDate = new Date(checkInDate);
       checkOutDate.setHours(checkOutDate.getHours() + 24);
-      
+
       const checkoutHours = String(checkOutDate.getHours()).padStart(2, '0');
       const checkoutMinutes = String(checkOutDate.getMinutes()).padStart(2, '0');
       const newCheckOutTime = `${checkoutHours}:${checkoutMinutes}`;
-      
+
       setCheckOutTime(newCheckOutTime);
-      setFormData({ ...formData, checkInTime, checkOutTime: newCheckOutTime });
+      setFormData((prev) => ({ ...prev, checkInTime, checkOutTime: newCheckOutTime }));
     }
   }, [checkInTime]);
 
@@ -35,7 +35,7 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
     const newCategories = selectedCategories.includes(category)
       ? selectedCategories.filter((c) => c !== category)
       : [...selectedCategories, category];
-    setFormData({ ...formData, categories: newCategories });
+    setFormData((prev) => ({ ...prev, categories: newCategories }));
   };
 
   return (
@@ -52,12 +52,11 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
           max="20"
           value={formData.maxGuests || ''}
           onChange={(e) => {
-            setFormData({ ...formData, maxGuests: parseInt(e.target.value) || '' });
-            if (formErrors.maxGuests) setFormErrors({ ...formErrors, maxGuests: '' });
+            setFormData((prev) => ({ ...prev, maxGuests: parseInt(e.target.value) || '' }));
+            if (formErrors.maxGuests) setFormErrors((prev) => ({ ...prev, maxGuests: '' }));
           }}
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-            formErrors.maxGuests ? 'border-red-500' : 'border-gray-300'
-          }`}
+          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.maxGuests ? 'border-red-500' : 'border-gray-300'
+            }`}
           placeholder="Enter maximum number of guests"
           required
         />
@@ -77,11 +76,10 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
               key={category}
               type="button"
               onClick={() => toggleCategory(category)}
-              className={`px-4 py-2 rounded-lg border-2 transition-all capitalize ${
-                selectedCategories.includes(category)
-                  ? 'bg-purple-600 text-white border-purple-600'
-                  : 'bg-white text-purple-700 border-purple-300 hover:border-purple-500'
-              }`}
+              className={`px-4 py-2 rounded-lg border-2 transition-all capitalize ${selectedCategories.includes(category)
+                ? 'bg-purple-600 text-white border-purple-600'
+                : 'bg-white text-purple-700 border-purple-300 hover:border-purple-500'
+                }`}
             >
               {category}
             </button>
@@ -100,7 +98,7 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
         <textarea
           id="houseRules"
           value={formData.houseRules || ''}
-          onChange={(e) => setFormData({ ...formData, houseRules: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, houseRules: e.target.value }))}
           rows={4}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           placeholder="e.g., No smoking, No pets, Quiet hours after 10 PM..."
@@ -121,7 +119,7 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
               value={checkInTime}
               onChange={(e) => {
                 setCheckInTime(e.target.value);
-                setFormData({ ...formData, checkInTime: e.target.value });
+                setFormData((prev) => ({ ...prev, checkInTime: e.target.value }));
               }}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
@@ -154,31 +152,46 @@ export function GuestRulesStep({ formData, setFormData, formErrors, setFormError
  * BBQ Calculator Component for Night-Stay listings
  */
 export function BBQCalculatorStep({ formData, setFormData }) {
-  const {
-    chickenKg,
-    muttonKg,
-    fishKg,
-    setChickenKg,
-    setMuttonKg,
-    setFishKg,
-    calculations,
-    rates,
-  } = useBBQCalculator(formData.bbqEnabled || false);
-
+  // Initialize availability if not present
   useEffect(() => {
-    setFormData({
-      ...formData,
-      bbqPrice: calculations.total,
-      bbqDetails: {
-        chickenKg,
-        muttonKg,
-        fishKg,
-        chickenPrice: calculations.chickenPrice,
-        muttonPrice: calculations.muttonPrice,
-        fishPrice: calculations.fishPrice,
+    if (!formData.bbqAvailability) {
+      setFormData((prev) => ({
+        ...prev,
+        bbqAvailability: {
+          isChickenAllowed: true,
+          isMuttonAllowed: true,
+          isFishAllowed: true,
+        },
+      }));
+    }
+    // Set default rates if not present (for backend compatibility)
+    if (!formData.bbqRates) {
+      setFormData((prev) => ({
+        ...prev,
+        bbqRates: {
+          chicken: 700,
+          mutton: 2000,
+          fish: 1500,
+        },
+      }));
+    }
+  }, []);
+
+  const handleAvailabilityChange = (key) => {
+    setFormData((prev) => ({
+      ...prev,
+      bbqAvailability: {
+        ...prev.bbqAvailability,
+        [key]: !prev.bbqAvailability?.[key],
       },
-    });
-  }, [calculations.total, chickenKg, muttonKg, fishKg]);
+    }));
+  };
+
+  const { isChickenAllowed, isMuttonAllowed, isFishAllowed } = formData.bbqAvailability || {
+    isChickenAllowed: true,
+    isMuttonAllowed: true,
+    isFishAllowed: true,
+  };
 
   return (
     <div className="space-y-6">
@@ -186,13 +199,13 @@ export function BBQCalculatorStep({ formData, setFormData }) {
       <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
         <div>
           <h3 className="font-semibold text-purple-800 mb-1">BBQ Service</h3>
-          <p className="text-sm text-purple-600">Enable BBQ service with custom pricing</p>
+          <p className="text-sm text-purple-600">Enable BBQ service for your guests</p>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
             checked={formData.bbqEnabled || false}
-            onChange={(e) => setFormData({ ...formData, bbqEnabled: e.target.checked })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, bbqEnabled: e.target.checked }))}
             className="sr-only peer"
           />
           <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
@@ -201,81 +214,65 @@ export function BBQCalculatorStep({ formData, setFormData }) {
 
       {formData.bbqEnabled && (
         <div className="space-y-4 p-4 bg-white border-2 border-purple-200 rounded-lg">
-          <h4 className="font-semibold text-purple-800 mb-4">BBQ Items</h4>
+          <h4 className="font-semibold text-purple-800 mb-2">Available BBQ Options</h4>
+          <p className="text-sm text-gray-600 mb-4">Select which meats you want to offer. Prices are fixed across the platform.</p>
 
-          {/* Chicken */}
-          <div>
-            <label htmlFor="chickenKg" className="block text-sm font-medium text-purple-700 mb-2">
-              Chicken (Rs {rates.chicken}/kg)
-            </label>
-            <div className="flex gap-3">
-              <input
-                type="number"
-                id="chickenKg"
-                min="0"
-                step="0.5"
-                value={chickenKg}
-                onChange={(e) => setChickenKg(parseFloat(e.target.value) || 0)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="0"
-              />
-              <div className="w-32 px-4 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold flex items-center justify-center">
-                Rs {calculations.chickenPrice.toLocaleString()}
+          <div className="space-y-4">
+            {/* Chicken Toggle */}
+            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div>
+                <span className="font-medium text-purple-900 block">Chicken BBQ</span>
+                <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded inline-block mt-1">
+                  Fixed Rate: Rs 700/kg
+                </span>
               </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isChickenAllowed}
+                  onChange={() => handleAvailabilityChange('isChickenAllowed')}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
             </div>
-          </div>
 
-          {/* Mutton */}
-          <div>
-            <label htmlFor="muttonKg" className="block text-sm font-medium text-purple-700 mb-2">
-              Mutton (Rs {rates.mutton}/kg)
-            </label>
-            <div className="flex gap-3">
-              <input
-                type="number"
-                id="muttonKg"
-                min="0"
-                step="0.5"
-                value={muttonKg}
-                onChange={(e) => setMuttonKg(parseFloat(e.target.value) || 0)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="0"
-              />
-              <div className="w-32 px-4 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold flex items-center justify-center">
-                Rs {calculations.muttonPrice.toLocaleString()}
+            {/* Mutton Toggle */}
+            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div>
+                <span className="font-medium text-purple-900 block">Mutton BBQ</span>
+                <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded inline-block mt-1">
+                  Fixed Rate: Rs 2000/kg
+                </span>
               </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isMuttonAllowed}
+                  onChange={() => handleAvailabilityChange('isMuttonAllowed')}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
             </div>
-          </div>
 
-          {/* Fish */}
-          <div>
-            <label htmlFor="fishKg" className="block text-sm font-medium text-purple-700 mb-2">
-              Fish (Rs {rates.fish}/kg)
-            </label>
-            <div className="flex gap-3">
-              <input
-                type="number"
-                id="fishKg"
-                min="0"
-                step="0.5"
-                value={fishKg}
-                onChange={(e) => setFishKg(parseFloat(e.target.value) || 0)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="0"
-              />
-              <div className="w-32 px-4 py-2 bg-purple-50 rounded-lg text-purple-700 font-semibold flex items-center justify-center">
-                Rs {calculations.fishPrice.toLocaleString()}
+            {/* Fish Toggle */}
+            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div>
+                <span className="font-medium text-purple-900 block">Fish BBQ</span>
+                <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded inline-block mt-1">
+                  Fixed Rate: Rs 1500/kg
+                </span>
               </div>
-            </div>
-          </div>
-
-          {/* Total BBQ Price */}
-          <div className="pt-4 border-t-2 border-purple-200">
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-semibold text-purple-800">Total BBQ Price:</span>
-              <span className="text-2xl font-bold text-purple-600">
-                Rs {calculations.total.toLocaleString()}
-              </span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isFishAllowed}
+                  onChange={() => handleAvailabilityChange('isFishAllowed')}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
             </div>
           </div>
         </div>
@@ -304,7 +301,7 @@ export function CampfireSoundStep({ formData, setFormData }) {
             <input
               type="checkbox"
               checked={formData.campfireEnabled || false}
-              onChange={(e) => setFormData({ ...formData, campfireEnabled: e.target.checked })}
+              onChange={(e) => setFormData((prev) => ({ ...prev, campfireEnabled: e.target.checked }))}
               className="sr-only peer"
             />
             <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
@@ -320,7 +317,7 @@ export function CampfireSoundStep({ formData, setFormData }) {
               id="campfirePrice"
               min="0"
               value={formData.campfirePrice || ''}
-              onChange={(e) => setFormData({ ...formData, campfirePrice: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => setFormData((prev) => ({ ...prev, campfirePrice: parseFloat(e.target.value) || 0 }))}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Enter price"
             />
@@ -342,7 +339,7 @@ export function CampfireSoundStep({ formData, setFormData }) {
             <input
               type="checkbox"
               checked={formData.soundSystemEnabled || false}
-              onChange={(e) => setFormData({ ...formData, soundSystemEnabled: e.target.checked })}
+              onChange={(e) => setFormData((prev) => ({ ...prev, soundSystemEnabled: e.target.checked }))}
               className="sr-only peer"
             />
             <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
@@ -358,7 +355,7 @@ export function CampfireSoundStep({ formData, setFormData }) {
               id="soundSystemPrice"
               min="0"
               value={formData.soundSystemPrice || ''}
-              onChange={(e) => setFormData({ ...formData, soundSystemPrice: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => setFormData((prev) => ({ ...prev, soundSystemPrice: parseFloat(e.target.value) || 0 }))}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Enter price"
             />
@@ -376,19 +373,19 @@ export function CampfireSoundStep({ formData, setFormData }) {
 export function TotalPricePreview({ formData }) {
   const calculateTotal = () => {
     let total = parseFloat(formData.regularPrice) || 0;
-    
+
     if (formData.bbqEnabled && formData.bbqPrice) {
       total += parseFloat(formData.bbqPrice);
     }
-    
+
     if (formData.campfireEnabled && formData.campfirePrice) {
       total += parseFloat(formData.campfirePrice);
     }
-    
+
     if (formData.soundSystemEnabled && formData.soundSystemPrice) {
       total += parseFloat(formData.soundSystemPrice);
     }
-    
+
     return total;
   };
 
@@ -397,27 +394,27 @@ export function TotalPricePreview({ formData }) {
   return (
     <div className="sticky top-4 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl shadow-2xl p-6 text-white">
       <h3 className="text-xl font-bold mb-4">Price Summary</h3>
-      
+
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
           <span>Base Price:</span>
           <span>Rs {parseFloat(formData.regularPrice || 0).toLocaleString()}</span>
         </div>
-        
+
         {formData.bbqEnabled && formData.bbqPrice > 0 && (
           <div className="flex justify-between text-sm">
             <span>BBQ Service:</span>
             <span>Rs {parseFloat(formData.bbqPrice).toLocaleString()}</span>
           </div>
         )}
-        
+
         {formData.campfireEnabled && formData.campfirePrice > 0 && (
           <div className="flex justify-between text-sm">
             <span>Campfire:</span>
             <span>Rs {parseFloat(formData.campfirePrice || 0).toLocaleString()}</span>
           </div>
         )}
-        
+
         {formData.soundSystemEnabled && formData.soundSystemPrice > 0 && (
           <div className="flex justify-between text-sm">
             <span>Sound System:</span>
@@ -425,7 +422,7 @@ export function TotalPricePreview({ formData }) {
           </div>
         )}
       </div>
-      
+
       <div className="pt-4 border-t border-purple-400">
         <div className="flex justify-between items-center">
           <span className="text-lg font-semibold">Total Price:</span>

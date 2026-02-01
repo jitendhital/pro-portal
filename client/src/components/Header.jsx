@@ -33,8 +33,8 @@ export default function Header() {
         {/* Logo */}
         <Link to="/">
           <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
-            <span className="text-purple-500">Jiten</span>
-            <span className="text-purple-700">Estate</span>
+            <span className="text-purple-500">Home</span>
+            <span className="text-purple-700">Hive</span>
           </h1>
         </Link>
 
@@ -76,8 +76,8 @@ export default function Header() {
             </Link>
           )}
 
-          {/* The "Sign In" and "Sign Up" links are always visible */} 
-           {currentUser ? (
+          {/* The "Sign In" and "Sign Up" links are always visible */}
+          {currentUser ? (
             <Link to='/profile'>
               <img
                 className='rounded-full h-7 w-7 object-cover border-2 border-purple-300 hover:border-purple-500 transition-colors'

@@ -81,6 +81,7 @@ export default function BookVisit({ listing, onClose }) {
           date: formData.date,
           timeSlot: formData.timeSlot,
           message: formData.message,
+          totalPrice: 0,
         }),
       });
 
@@ -175,11 +176,10 @@ export default function BookVisit({ listing, onClose }) {
                   setFormData({ ...formData, timeSlot: slot });
                   setError('');
                 }}
-                className={`p-2 rounded-lg border text-sm transition-all ${
-                  formData.timeSlot === slot
+                className={`p-2 rounded-lg border text-sm transition-all ${formData.timeSlot === slot
                     ? 'bg-purple-600 text-white border-purple-600'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50'
-                }`}
+                  }`}
               >
                 {slot}
               </button>

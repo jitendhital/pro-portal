@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { FaChevronLeft, FaChevronRight, FaCheck, FaUpload, FaMapMarkerAlt, FaTimes } from 'react-icons/fa';
 import { useToast } from '../contexts/ToastContext';
 import { supabase } from '../supabase';
@@ -18,10 +18,15 @@ export default function MultiStepWizard({
   onSubmit,
   initialData = {},
   additionalSteps = [],
+  isEditing = false,
 }) {
   const { currentUser } = useSelector((state) => state.user);
   const { success, error: showError } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
+  // Track if we've initialized to prevent resetting on every render
+  const initializedRef = useRef(false);
+  const initialDataRef = useRef(null);
+
   const [formData, setFormData] = useState(() => ({
     name: '',
     description: '',
@@ -35,13 +40,27 @@ export default function MultiStepWizard({
     offer: false,
     contactEmail: '',
     contactPhone: '',
-    ...initialData,
+    ...(initialData || {}),
   }));
 
-  // Update formData when initialData changes
+  // Update formData when initialData changes (only once, when it first loads from localStorage)
   useEffect(() => {
+    // Only update if initialData is provided, we haven't initialized yet, and it's different from what we have
     if (initialData && Object.keys(initialData).length > 0) {
-      setFormData((prev) => ({ ...prev, ...initialData }));
+      // Deep comparison to avoid unnecessary updates
+      const currentDataStr = JSON.stringify(initialDataRef.current);
+      const newDataStr = JSON.stringify(initialData);
+
+      // Only update if this is the first time we're seeing this data
+      if (!initializedRef.current && currentDataStr !== newDataStr) {
+        setFormData((prev) => {
+          // Only merge if prev is empty (initial state)
+          const isInitialState = !prev.name && !prev.description && !prev.address;
+          return isInitialState ? { ...prev, ...initialData } : prev;
+        });
+        initialDataRef.current = initialData;
+        initializedRef.current = true;
+      }
     }
   }, [initialData]);
   const [files, setFiles] = useState([]);
@@ -49,40 +68,8 @@ export default function MultiStepWizard({
   const [saving, setSaving] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
-  // Common steps for all listing types
-  const commonSteps = [
-    {
-      id: 'basic',
-      title: 'Basic Information',
-      component: BasicInfoStep,
-    },
-    {
-      id: 'details',
-      title: 'Property Details',
-      component: PropertyDetailsStep,
-    },
-    {
-      id: 'images',
-      title: 'Images',
-      component: ImagesStep,
-    },
-    {
-      id: 'pricing',
-      title: 'Pricing',
-      component: PricingStep,
-    },
-    {
-      id: 'contact',
-      title: 'Contact Information',
-      component: ContactStep,
-    },
-  ];
-
-  const allSteps = [...commonSteps, ...additionalSteps];
-  const totalSteps = allSteps.length;
-
-  // Basic Info Step Component
-  function BasicInfoStep() {
+  // Basic Info Step Component - Memoized to prevent recreation
+  const BasicInfoStep = useCallback(() => {
     return (
       <div className="space-y-6">
         <div>
@@ -94,12 +81,11 @@ export default function MultiStepWizard({
             id="name"
             value={formData.name}
             onChange={(e) => {
-              setFormData({ ...formData, name: e.target.value });
-              if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
+              setFormData((prev) => ({ ...prev, name: e.target.value }));
+              if (formErrors.name) setFormErrors((prev) => ({ ...prev, name: '' }));
             }}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-              formErrors.name ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.name ? 'border-red-500' : 'border-gray-300'
+              }`}
             placeholder="e.g., Beautiful 3BHK Apartment"
             required
           />
@@ -114,13 +100,12 @@ export default function MultiStepWizard({
             id="description"
             value={formData.description}
             onChange={(e) => {
-              setFormData({ ...formData, description: e.target.value });
-              if (formErrors.description) setFormErrors({ ...formErrors, description: '' });
+              setFormData((prev) => ({ ...prev, description: e.target.value }));
+              if (formErrors.description) setFormErrors((prev) => ({ ...prev, description: '' }));
             }}
             rows={6}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-              formErrors.description ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.description ? 'border-red-500' : 'border-gray-300'
+              }`}
             placeholder="Describe your property in detail..."
             required
           />
@@ -140,12 +125,11 @@ export default function MultiStepWizard({
               id="address"
               value={formData.address}
               onChange={(e) => {
-                setFormData({ ...formData, address: e.target.value });
-                if (formErrors.address) setFormErrors({ ...formErrors, address: '' });
+                setFormData((prev) => ({ ...prev, address: e.target.value }));
+                if (formErrors.address) setFormErrors((prev) => ({ ...prev, address: '' }));
               }}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                formErrors.address ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.address ? 'border-red-500' : 'border-gray-300'
+                }`}
               placeholder="Enter full address"
               required
             />
@@ -154,10 +138,10 @@ export default function MultiStepWizard({
         </div>
       </div>
     );
-  }
+  }, [formData, formErrors, setFormData, setFormErrors]);
 
-  // Property Details Step Component
-  function PropertyDetailsStep() {
+  // Property Details Step Component - Memoized to prevent recreation
+  const PropertyDetailsStep = useCallback(() => {
     return (
       <div className="space-y-6">
         <div>
@@ -170,7 +154,7 @@ export default function MultiStepWizard({
             min="1"
             max="10"
             value={formData.bathrooms}
-            onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 1 })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, bathrooms: parseInt(e.target.value) || 1 }))}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
@@ -183,7 +167,7 @@ export default function MultiStepWizard({
               type="checkbox"
               id="parking"
               checked={formData.parking}
-              onChange={(e) => setFormData({ ...formData, parking: e.target.checked })}
+              onChange={(e) => setFormData((prev) => ({ ...prev, parking: e.target.checked }))}
               className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
             />
             <label htmlFor="parking" className="text-gray-700 cursor-pointer">
@@ -195,7 +179,7 @@ export default function MultiStepWizard({
               type="checkbox"
               id="furnished"
               checked={formData.furnished}
-              onChange={(e) => setFormData({ ...formData, furnished: e.target.checked })}
+              onChange={(e) => setFormData((prev) => ({ ...prev, furnished: e.target.checked }))}
               className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
             />
             <label htmlFor="furnished" className="text-gray-700 cursor-pointer">
@@ -205,10 +189,10 @@ export default function MultiStepWizard({
         </div>
       </div>
     );
-  }
+  }, [formData, setFormData]);
 
-  // Images Step Component
-  function ImagesStep() {
+  // Images Step Component - Memoized to prevent recreation
+  const ImagesStep = useCallback(() => {
     const handleImageUpload = async () => {
       if (files.length === 0) return;
       if (files.length + formData.imageUrls.length > 6) {
@@ -240,7 +224,7 @@ export default function MultiStepWizard({
         });
 
         const urls = await Promise.all(uploadPromises);
-        setFormData({ ...formData, imageUrls: [...formData.imageUrls, ...urls] });
+        setFormData((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, ...urls] }));
         setFiles([]);
         success('Images uploaded successfully');
       } catch (err) {
@@ -310,10 +294,10 @@ export default function MultiStepWizard({
         )}
       </div>
     );
-  }
+  }, [formData, files, uploading, currentUser, setFormData, setFiles, success, showError]);
 
-  // Pricing Step Component
-  function PricingStep() {
+  // Pricing Step Component - Memoized to prevent recreation
+  const PricingStep = useCallback(() => {
     return (
       <div className="space-y-6">
         <div>
@@ -326,12 +310,11 @@ export default function MultiStepWizard({
             min="0"
             value={formData.regularPrice}
             onChange={(e) => {
-              setFormData({ ...formData, regularPrice: e.target.value });
-              if (formErrors.regularPrice) setFormErrors({ ...formErrors, regularPrice: '' });
+              setFormData((prev) => ({ ...prev, regularPrice: e.target.value }));
+              if (formErrors.regularPrice) setFormErrors((prev) => ({ ...prev, regularPrice: '' }));
             }}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-              formErrors.regularPrice ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.regularPrice ? 'border-red-500' : 'border-gray-300'
+              }`}
             placeholder="Enter price"
             required
           />
@@ -345,7 +328,7 @@ export default function MultiStepWizard({
             type="checkbox"
             id="offer"
             checked={formData.offer}
-            onChange={(e) => setFormData({ ...formData, offer: e.target.checked })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, offer: e.target.checked }))}
             className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
           />
           <label htmlFor="offer" className="text-gray-700 cursor-pointer">
@@ -364,12 +347,11 @@ export default function MultiStepWizard({
               min="0"
               value={formData.discountPrice}
               onChange={(e) => {
-                setFormData({ ...formData, discountPrice: e.target.value });
-                if (formErrors.discountPrice) setFormErrors({ ...formErrors, discountPrice: '' });
+                setFormData((prev) => ({ ...prev, discountPrice: e.target.value }));
+                if (formErrors.discountPrice) setFormErrors((prev) => ({ ...prev, discountPrice: '' }));
               }}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                formErrors.discountPrice ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.discountPrice ? 'border-red-500' : 'border-gray-300'
+                }`}
               placeholder="Enter discount price"
               required={formData.offer}
             />
@@ -380,10 +362,10 @@ export default function MultiStepWizard({
         )}
       </div>
     );
-  }
+  }, [formData, formErrors, setFormData, setFormErrors]);
 
-  // Contact Step Component
-  function ContactStep() {
+  // Contact Step Component - Memoized to prevent recreation
+  const ContactStep = useCallback(() => {
     return (
       <div className="space-y-6">
         <div>
@@ -395,12 +377,11 @@ export default function MultiStepWizard({
             id="contactEmail"
             value={formData.contactEmail}
             onChange={(e) => {
-              setFormData({ ...formData, contactEmail: e.target.value });
-              if (formErrors.contactEmail) setFormErrors({ ...formErrors, contactEmail: '' });
+              setFormData((prev) => ({ ...prev, contactEmail: e.target.value }));
+              if (formErrors.contactEmail) setFormErrors((prev) => ({ ...prev, contactEmail: '' }));
             }}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-              formErrors.contactEmail ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.contactEmail ? 'border-red-500' : 'border-gray-300'
+              }`}
             placeholder="your@email.com"
             required
           />
@@ -417,14 +398,46 @@ export default function MultiStepWizard({
             type="tel"
             id="contactPhone"
             value={formData.contactPhone}
-            onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, contactPhone: e.target.value }))}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="+1234567890"
           />
         </div>
       </div>
     );
-  }
+  }, [formData, formErrors, setFormData, setFormErrors]);
+
+  // Common steps for all listing types - Memoized to prevent recreation
+  const commonSteps = useMemo(() => [
+    {
+      id: 'basic',
+      title: 'Basic Information',
+      component: BasicInfoStep,
+    },
+    {
+      id: 'details',
+      title: 'Property Details',
+      component: PropertyDetailsStep,
+    },
+    {
+      id: 'images',
+      title: 'Images',
+      component: ImagesStep,
+    },
+    {
+      id: 'pricing',
+      title: 'Pricing',
+      component: PricingStep,
+    },
+    {
+      id: 'contact',
+      title: 'Contact Information',
+      component: ContactStep,
+    },
+  ], [BasicInfoStep, PropertyDetailsStep, ImagesStep, PricingStep, ContactStep]);
+
+  const allSteps = useMemo(() => [...commonSteps, ...additionalSteps], [commonSteps, additionalSteps]);
+  const totalSteps = allSteps.length;
 
   // Validation
   const validateStep = (stepIndex) => {
@@ -524,9 +537,39 @@ export default function MultiStepWizard({
   const StepComponent = allSteps[currentStep].component;
   const isAdditionalStep = additionalSteps.some(step => step.id === allSteps[currentStep].id);
 
+  const categoryLabel = useMemo(() => {
+    switch (listingType) {
+      case 'sell': return 'Sale';
+      case 'rent': return 'Rent';
+      case 'night-stay': return 'Night Stay';
+      default: return listingType;
+    }
+  }, [listingType]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Header with Category and Name */}
+        <div className="mb-8 text-center">
+          {isEditing ? (
+            <div className="space-y-2">
+              <span className="inline-block bg-purple-100 text-purple-800 text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-purple-200">
+                {categoryLabel}
+              </span>
+              <h1 className="text-3xl font-bold text-slate-800">
+                Editing: <span className="text-purple-700">{formData.name || 'Property'}</span>
+              </h1>
+            </div>
+          ) : (
+            <div>
+              <p className="text-purple-600 font-medium mb-1 uppercase tracking-wide text-sm">Create New Listing</p>
+              <h1 className="text-3xl font-bold text-slate-800">
+                {categoryLabel} Listing
+              </h1>
+            </div>
+          )}
+        </div>
+
         {/* Step Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -534,29 +577,26 @@ export default function MultiStepWizard({
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
-                      index < currentStep
-                        ? 'bg-purple-600 text-white'
-                        : index === currentStep
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${index < currentStep
+                      ? 'bg-purple-600 text-white'
+                      : index === currentStep
                         ? 'bg-purple-500 text-white ring-4 ring-purple-200'
                         : 'bg-gray-200 text-gray-600'
-                    }`}
+                      }`}
                   >
                     {index < currentStep ? <FaCheck /> : index + 1}
                   </div>
                   <p
-                    className={`text-xs mt-2 text-center ${
-                      index === currentStep ? 'text-purple-600 font-semibold' : 'text-gray-500'
-                    }`}
+                    className={`text-xs mt-2 text-center ${index === currentStep ? 'text-purple-600 font-semibold' : 'text-gray-500'
+                      }`}
                   >
                     {step.title}
                   </p>
                 </div>
                 {index < allSteps.length - 1 && (
                   <div
-                    className={`h-1 flex-1 mx-2 ${
-                      index < currentStep ? 'bg-purple-600' : 'bg-gray-200'
-                    }`}
+                    className={`h-1 flex-1 mx-2 ${index < currentStep ? 'bg-purple-600' : 'bg-gray-200'
+                      }`}
                   />
                 )}
               </div>
@@ -577,7 +617,7 @@ export default function MultiStepWizard({
               setFormErrors={setFormErrors}
             />
           ) : (
-            <StepComponent />
+            StepComponent()
           )}
         </div>
 

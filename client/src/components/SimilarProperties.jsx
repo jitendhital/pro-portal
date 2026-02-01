@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { findSimilarProperties } from '../utils/propertyRecommendation';
 import ListingItem from './ListingItem';
 import { SkeletonLoader } from './SkeletonLoader';
-import { FaSparkles } from 'react-icons/fa';
+import { FaStar } from 'react-icons/fa';
 
 /**
  * Similar Properties Component
@@ -38,7 +38,7 @@ export default function SimilarProperties({ currentListing, allListings = [] }) 
     return (
       <div className="mt-8">
         <h2 className="text-2xl font-semibold text-purple-700 mb-4 flex items-center gap-2">
-          <FaSparkles className="text-purple-500" />
+          <FaStar className="text-purple-500" />
           Similar Properties (AI Recommended)
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -57,7 +57,7 @@ export default function SimilarProperties({ currentListing, allListings = [] }) 
   return (
     <div className="mt-8 border-t pt-8">
       <h2 className="text-2xl font-semibold text-purple-700 mb-4 flex items-center gap-2">
-        <FaSparkles className="text-purple-500" />
+        <FaStar className="text-purple-500" />
         Similar Properties
         <span className="text-sm font-normal text-purple-500">
           (AI Recommended - Score: {similarProperties[0]?.recommendationScore?.toFixed(1)}%)

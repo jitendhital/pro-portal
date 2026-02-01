@@ -62,7 +62,7 @@ export default function Home() {
           place with ease
         </h1>
         <div className='text-purple-500 text-xs sm:text-sm'>
-          JitenEstate is the best place to find your next perfect place to
+          HomeHive is the best place to find your next perfect place to
           live.
           <br />
           We have a wide range of properties for you to choose from.

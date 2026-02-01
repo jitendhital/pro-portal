@@ -54,6 +54,34 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    bbqRates: {
+      chicken: {
+        type: Number,
+        default: 700,
+      },
+      mutton: {
+        type: Number,
+        default: 2000,
+      },
+      fish: {
+        type: Number,
+        default: 1500,
+      },
+    },
+    bbqAvailability: {
+      isChickenAllowed: {
+        type: Boolean,
+        default: true,
+      },
+      isMuttonAllowed: {
+        type: Boolean,
+        default: true,
+      },
+      isFishAllowed: {
+        type: Boolean,
+        default: true,
+      },
+    },
   },
   { timestamps: true }
 );

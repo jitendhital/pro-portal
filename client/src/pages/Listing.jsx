@@ -56,9 +56,9 @@ export default function Listing() {
         setListing(data.listing);
         setLoading(false);
         setError(false);
-        
-        // Fetch unavailable dates for night-stay listings
-        if (data.listing.listingSubType === 'night-stay' || (data.listing.type === 'rent' && data.listing.bbqEnabled)) {
+
+        // Fetch unavailable dates for night-stay listings and all rentals
+        if (data.listing.listingSubType === 'night-stay' || data.listing.type === 'rent') {
           fetchUnavailableDates(data.listing._id);
         }
       } catch (error) {
@@ -66,7 +66,7 @@ export default function Listing() {
         setLoading(false);
       }
     };
-    
+
     const fetchUnavailableDates = async (listingId) => {
       try {
         // Fetch bookings for this property (as seller)
@@ -89,9 +89,9 @@ export default function Listing() {
         console.error('Error fetching unavailable dates:', error);
       }
     };
-    
+
     fetchListing();
-    
+
     // Fetch all listings for similar properties recommendation
     const fetchAllListings = async () => {
       try {
@@ -104,7 +104,7 @@ export default function Listing() {
         console.error('Error fetching all listings:', error);
       }
     };
-    
+
     fetchAllListings();
   }, [params.listingId]);
 
@@ -171,25 +171,24 @@ export default function Listing() {
               {listing.offer
                 ? listing.discountPrice.toLocaleString('en-US')
                 : listing.regularPrice.toLocaleString('en-US')}
-              {listing.type === 'rent' && ' / month'}
+              {listing.listingSubType === 'night-stay' ? ' / night' : (listing.type === 'rent' && ' / month')}
             </p>
             <p className='flex items-center mt-6 gap-2 text-slate-600  text-sm'>
               <FaMapMarkerAlt className='text-green-700' />
               {listing.address}
             </p>
             <div className='flex gap-4 flex-wrap'>
-              <p className={`w-full max-w-[200px] text-white text-center p-1 rounded-md ${
-                listing.listingSubType === 'night-stay' 
-                  ? 'bg-purple-600' 
-                  : listing.type === 'rent' 
-                  ? 'bg-red-900' 
+              <p className={`w-full max-w-[200px] text-white text-center p-1 rounded-md ${listing.listingSubType === 'night-stay'
+                ? 'bg-purple-600'
+                : listing.type === 'rent'
+                  ? 'bg-red-900'
                   : 'bg-blue-900'
-              }`}>
-                {listing.listingSubType === 'night-stay' 
-                  ? '🌙 Night-Stay Experience' 
-                  : listing.type === 'rent' 
-                  ? 'For Rent' 
-                  : 'For Sale'}
+                }`}>
+                {listing.listingSubType === 'night-stay'
+                  ? '🌙 Night-Stay Experience'
+                  : listing.type === 'rent'
+                    ? 'For Rent'
+                    : 'For Sale'}
               </p>
               {listing.offer && (
                 <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
@@ -225,8 +224,8 @@ export default function Listing() {
             </ul>
             {currentUser && listing.userRef !== currentUser._id && !contact && !showBookVisit && !showNightStayBooking && (
               <div className='flex gap-3 flex-wrap'>
-                {/* Show Night-Stay booking button if it's a night-stay listing */}
-                {(listing.listingSubType === 'night-stay' || (listing.type === 'rent' && listing.bbqEnabled)) ? (
+                {/* Show Night-Stay booking button if it's a night-stay listing or ANY rent listing */}
+                {(listing.listingSubType === 'night-stay' || listing.type === 'rent') ? (
                   <button
                     onClick={() => setShowNightStayBooking(true)}
                     className='bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all'
@@ -263,7 +262,7 @@ export default function Listing() {
           </div>
         </div>
       )}
-      
+
       {/* Similar Properties Section - Uses Recommendation Algorithm */}
       {listing && allListings.length > 0 && (
         <div className="max-w-6xl mx-auto p-3">

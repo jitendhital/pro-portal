@@ -4,26 +4,32 @@ import { errorHandler } from '../utils/errors.js';
 
 export const createBooking = async (req, res, next) => {
   try {
-    const { 
-      propertyId, 
-      date, 
-      timeSlot, 
-      message, 
-      guests, 
-      bbqEnabled, 
-      chickenKg, 
-      muttonKg, 
-      fishKg, 
-      campfireEnabled, 
-      soundSystemEnabled, 
-      totalPrice 
+    const {
+      propertyId,
+      date,
+      timeSlot,
+      message,
+      guests,
+      bbqEnabled,
+      chickenKg,
+      muttonKg,
+      fishKg,
+      campfireEnabled,
+      soundSystemEnabled,
+      totalPrice
     } = req.body;
+
+    console.log('Creating booking with body:', req.body); // Debug log
+
     const buyerId = req.user.id;
 
     // Validate required fields
-    if (!propertyId || !date || totalPrice === undefined) {
-      return next(errorHandler(400, 'Property ID, date, and total price are required'));
+    if (!propertyId || !date) {
+      return next(errorHandler(400, 'Property ID and date are required'));
     }
+
+    // Default totalPrice to 0 if not provided
+    const finalTotalPrice = totalPrice !== undefined ? totalPrice : 0;
 
     // For regular bookings, timeSlot is required
     // For night-stay bookings, timeSlot is optional
@@ -33,7 +39,7 @@ export const createBooking = async (req, res, next) => {
     }
 
     const isNightStay = property.listingSubType === 'night-stay' || (property.type === 'rent' && property.bbqEnabled);
-    
+
     if (!isNightStay && !timeSlot) {
       return next(errorHandler(400, 'Time slot is required for regular bookings'));
     }
@@ -47,7 +53,7 @@ export const createBooking = async (req, res, next) => {
     const bookingDate = new Date(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (bookingDate < today) {
       return next(errorHandler(400, 'Booking date must be in the future'));
     }
@@ -92,7 +98,7 @@ export const createBooking = async (req, res, next) => {
       fishKg: fishKg || 0,
       campfireEnabled: campfireEnabled || false,
       soundSystemEnabled: soundSystemEnabled || false,
-      totalPrice,
+      totalPrice: finalTotalPrice,
       status: 'pending',
     });
 
@@ -135,11 +141,11 @@ export const getBookings = async (req, res, next) => {
         const property = await Listing.findById(booking.propertyId).select('name address imageUrls');
         const buyer = await User.findById(booking.buyerId).select('username email avatar');
         const seller = await User.findById(booking.sellerId).select('username email avatar');
-        
-        const propertyData = property 
+
+        const propertyData = property
           ? { ...property._doc || property, _id: property._id || booking.propertyId }
           : { _id: booking.propertyId, name: 'Property Deleted', address: 'N/A', imageUrls: [] };
-        
+
         return {
           ...booking._doc,
           propertyId: propertyData,
@@ -225,7 +231,7 @@ export const getBooking = async (req, res, next) => {
     const buyer = await User.findById(booking.buyerId).select('username email avatar');
     const seller = await User.findById(booking.sellerId).select('username email avatar');
 
-    const propertyData = property 
+    const propertyData = property
       ? { ...property._doc || property, _id: property._id || booking.propertyId }
       : { _id: booking.propertyId, name: 'Property Deleted', address: 'N/A', imageUrls: [] };
 

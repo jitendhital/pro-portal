@@ -4,19 +4,27 @@ import { useState, useMemo } from 'react';
  * Custom hook for BBQ price calculation
  * Calculates individual and total BBQ prices based on weight inputs
  * @param {boolean} enabled - Whether BBQ is enabled
+ * @param {Object} initialValues - Initial values for chickenKg, muttonKg, fishKg
  * @returns {Object} BBQ calculation state and methods
  */
-export function useBBQCalculator(enabled = false) {
-  const [chickenKg, setChickenKg] = useState(0);
-  const [muttonKg, setMuttonKg] = useState(0);
-  const [fishKg, setFishKg] = useState(0);
+export function useBBQCalculator(enabled = false, initialValues = {}, customRates = {}) {
+  const [chickenKg, setChickenKg] = useState(initialValues.chickenKg || 0);
+  const [muttonKg, setMuttonKg] = useState(initialValues.muttonKg || 0);
+  const [fishKg, setFishKg] = useState(initialValues.fishKg || 0);
 
-  // Fixed rates per kg
-  const RATES = {
+  // Default rates
+  const DEFAULT_RATES = {
     chicken: 700,
     mutton: 2000,
     fish: 1500,
   };
+
+  // Merge custom rates with defaults
+  const RATES = useMemo(() => ({
+    chicken: customRates.chicken || DEFAULT_RATES.chicken,
+    mutton: customRates.mutton || DEFAULT_RATES.mutton,
+    fish: customRates.fish || DEFAULT_RATES.fish,
+  }), [customRates]);
 
   // Calculate individual prices
   const calculations = useMemo(() => {
