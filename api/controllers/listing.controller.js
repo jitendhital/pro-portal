@@ -12,14 +12,14 @@ export const createListing = async (req, res, next) => {
     // Validate required fields (discountPrice is only required if offer is true)
     const requiredFields = ['name', 'description', 'address', 'regularPrice', 'bathrooms', 'bedrooms', 'furnished', 'parking', 'type', 'offer', 'imageUrls'];
     const missingFields = requiredFields.filter(field => !listingData[field] && listingData[field] !== false);
-    
+
     if (missingFields.length > 0) {
       return next(errorHandler(400, `Missing required fields: ${missingFields.join(', ')}`));
     }
 
     // Convert price fields to numbers
     const regularPrice = parseFloat(listingData.regularPrice);
-    
+
     // Validate price fields
     if (isNaN(regularPrice) || regularPrice <= 0) {
       return next(errorHandler(400, 'Regular price must be greater than 0'));
@@ -32,7 +32,7 @@ export const createListing = async (req, res, next) => {
         return next(errorHandler(400, 'Discount price is required when offer is enabled'));
       }
       discountPrice = parseFloat(listingData.discountPrice);
-      
+
       if (isNaN(discountPrice) || discountPrice < 0) {
         return next(errorHandler(400, 'Discount price must be a valid non-negative number'));
       }
@@ -48,7 +48,7 @@ export const createListing = async (req, res, next) => {
     // Convert and validate numeric fields
     const bathrooms = parseInt(listingData.bathrooms);
     const bedrooms = parseInt(listingData.bedrooms);
-    
+
     if (isNaN(bathrooms) || bathrooms < 0 || isNaN(bedrooms) || bedrooms < 0) {
       return next(errorHandler(400, 'Bathrooms and bedrooms must be non-negative numbers'));
     }
@@ -72,10 +72,10 @@ export const createListing = async (req, res, next) => {
       bathrooms,
       bedrooms,
     });
-    
+
     // Exclude sensitive data if any
     const { __v, ...listingResponse } = listing._doc;
-    
+
     return res.status(201).json({
       success: true,
       listing: listingResponse,
@@ -129,7 +129,7 @@ export const updateListing = async (req, res, next) => {
 
     // Convert price fields to numbers if provided
     const updateData = { ...req.body };
-    
+
     if (updateData.regularPrice !== undefined) {
       updateData.regularPrice = parseFloat(updateData.regularPrice);
       if (isNaN(updateData.regularPrice) || updateData.regularPrice <= 0) {
@@ -285,6 +285,7 @@ export const getListings = async (req, res, next) => {
       furnished,
       parking,
       type,
+      ...(req.user && { userRef: { $ne: req.user.id } }),
     })
       .sort({ [sort]: order })
       .limit(limit)
@@ -303,7 +304,7 @@ export const getUserListings = async (req, res, next) => {
     }
 
     const listings = await Listing.find({ userRef: req.params.userId }).sort({ createdAt: -1 });
-    
+
     return res.status(200).json({
       success: true,
       listings,

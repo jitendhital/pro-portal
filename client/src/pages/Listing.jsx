@@ -226,12 +226,20 @@ export default function Listing() {
               <div className='flex gap-3 flex-wrap'>
                 {/* Show Night-Stay booking button if it's a night-stay listing or ANY rent listing */}
                 {(listing.listingSubType === 'night-stay' || listing.type === 'rent') ? (
-                  <button
-                    onClick={() => setShowNightStayBooking(true)}
-                    className='bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all'
-                  >
-                    🌙 Book One-Night Stay
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setShowNightStayBooking(true)}
+                      className='bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all'
+                    >
+                      🌙 Book One-Night Stay
+                    </button>
+                    <button
+                      onClick={() => setContact(true)}
+                      className='bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all'
+                    >
+                      Contact landlord
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button
