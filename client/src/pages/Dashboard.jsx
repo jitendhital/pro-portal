@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import BookingStatusBadge from '../components/BookingStatusBadge';
-import { FaCalendarAlt, FaClock, FaUser, FaMapMarkerAlt, FaHome, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaBuilding, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaUser, FaMapMarkerAlt, FaHome, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaBuilding, FaEdit, FaTrash, FaInfoCircle, FaMoon } from 'react-icons/fa';
 
 export default function Dashboard() {
   const { currentUser } = useSelector((state) => state.user);
@@ -167,6 +167,34 @@ export default function Dashboard() {
     }
   };
 
+  const handleRemoveBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to remove this booking? This should only be done if the buyer has not contacted you within 48 hours.')) {
+      return;
+    }
+
+    try {
+      setUpdating({ ...updating, [bookingId]: true });
+      const res = await fetch(`/api/booking/delete/${bookingId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        alert(data.message || 'Failed to remove booking');
+        return;
+      }
+
+      setSellerBookings((prev) => prev.filter((b) => b._id !== bookingId));
+      alert('Booking removed successfully.');
+    } catch (error) {
+      alert('An error occurred. Please try again.');
+    } finally {
+      setUpdating({ ...updating, [bookingId]: false });
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -190,7 +218,8 @@ export default function Dashboard() {
   const buyerStats = getStats(buyerBookings);
   const listingStats = {
     total: userListings.length,
-    rent: userListings.filter(l => l.type === 'rent').length,
+    rent: userListings.filter(l => l.type === 'rent' && l.listingSubType !== 'night-stay').length,
+    stay: userListings.filter(l => l.listingSubType === 'night-stay').length,
     sale: userListings.filter(l => l.type === 'sale').length
   };
 
@@ -360,10 +389,15 @@ export default function Dashboard() {
                               <h3 className='text-xl font-semibold text-slate-800'>
                                 {property.name || 'Property'}
                               </h3>
-                              <p className='text-sm text-slate-600 flex items-center gap-1 mt-1'>
-                                <FaMapMarkerAlt className='text-green-700' />
-                                {property.address || 'Address not available'}
-                              </p>
+                              <div className='flex gap-2 items-center mt-1'>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${booking.bookingType === 'night-stay' ? 'bg-purple-100 text-purple-700' : booking.bookingType === 'property' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+                                  {booking.bookingType === 'night-stay' ? '🌙 Night-Stay' : booking.bookingType === 'property' ? '🏠 Property Book' : '📅 Visit Visit'}
+                                </span>
+                                <p className='text-sm text-slate-600 flex items-center gap-1'>
+                                  <FaMapMarkerAlt className='text-green-700' />
+                                  {property.address || 'Address not available'}
+                                </p>
+                              </div>
                             </div>
                             <BookingStatusBadge status={booking.status} />
                           </div>
@@ -394,6 +428,40 @@ export default function Dashboard() {
                               <p className='text-sm text-slate-700'>
                                 <strong>Message:</strong> {booking.message}
                               </p>
+                            </div>
+                          )}
+
+                          {booking.status === 'approved' && booking.bookingType === 'property' && (
+                            <div className='mt-2'>
+                              {(() => {
+                                const approvedAt = new Date(booking.approvedAt);
+                                const now = new Date();
+                                const diffHours = (now - approvedAt) / (1000 * 60 * 60);
+                                const isRemovable = diffHours >= 48;
+
+                                return (
+                                  <div className='flex flex-col gap-2'>
+                                    <div className={`text-xs p-2 rounded-lg flex items-center gap-2 ${isRemovable ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+                                      <FaInfoCircle />
+                                      <span>
+                                        {isRemovable
+                                          ? "Buyer hasn't contacted you? You can now remove this booking."
+                                          : `Contact window open. Removable in ${Math.ceil(48 - diffHours)} hours if unresponsive.`}
+                                      </span>
+                                    </div>
+                                    {isRemovable && (
+                                      <button
+                                        onClick={() => handleRemoveBooking(booking._id)}
+                                        disabled={updating[booking._id]}
+                                        className='bg-red-50 text-red-600 border border-red-200 rounded-lg px-4 py-2 hover:bg-red-600 hover:text-white transition-all text-sm font-semibold flex items-center justify-center gap-2'
+                                      >
+                                        <FaTrash />
+                                        {updating[booking._id] ? 'Removing...' : 'Remove (Buyer Unresponsive)'}
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           )}
 
@@ -629,7 +697,7 @@ export default function Dashboard() {
         {activeTab === 'listings' && (
           <div>
             {/* Stats Cards */}
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+            <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
               <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500'>
                 <div className='flex items-center justify-between'>
                   <div>
@@ -642,10 +710,19 @@ export default function Dashboard() {
               <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>For Rent/Stay</p>
+                    <p className='text-slate-600 text-sm font-medium'>For Rent</p>
                     <p className='text-3xl font-bold text-blue-600'>{listingStats.rent}</p>
                   </div>
                   <FaHome className='text-3xl text-blue-500' />
+                </div>
+              </div>
+              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-cyan-500'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-slate-600 text-sm font-medium'>For Stay</p>
+                    <p className='text-3xl font-bold text-cyan-600'>{listingStats.stay}</p>
+                  </div>
+                  <FaMoon className='text-3xl text-cyan-500' />
                 </div>
               </div>
               <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500'>
@@ -764,6 +841,6 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }

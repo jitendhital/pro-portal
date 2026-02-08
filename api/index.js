@@ -30,12 +30,12 @@ app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
 
 mongoose
-  .connect('mongodb+srv://jiten:jiten@pro-portal.r9ldr7q.mongodb.net/?retryWrites=true&w=majority&appName=pro-portal', {
-    serverSelectionTimeoutMS: 5000,
+  .connect(process.env.MONGO, {
+    serverSelectionTimeoutMS: 10000, // Increased timeout
     socketTimeoutMS: 45000,
-    // Additional options to help with SSL
-    tlsAllowInvalidCertificates: false,
-    tlsAllowInvalidHostnames: false,
+    // Try relaxing SSL requirements to see if it fixes the Windows TLS issue
+    tlsAllowInvalidCertificates: true,
+    tlsAllowInvalidHostnames: true,
   })
   .then(() => {
     console.log('Connected to MongoDB');
@@ -44,7 +44,7 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
+    console.error('Detailed MongoDB connection error:', err);
   });
 
 app.use('/api/user', userRouter);

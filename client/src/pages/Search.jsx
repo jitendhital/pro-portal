@@ -43,7 +43,7 @@ export default function Search() {
     const fetchListings = async () => {
       setLoading(true);
       setShowMore(false);
-      
+
       // Build query params with default values if not in URL
       const queryParams = new URLSearchParams();
       if (searchTermFromUrl) queryParams.set('searchTerm', searchTermFromUrl);
@@ -54,11 +54,11 @@ export default function Search() {
       queryParams.set('sort', sortFromUrl || 'createdAt');
       queryParams.set('order', orderFromUrl || 'desc');
       queryParams.set('limit', '11'); // Set limit to 11
-      
+
       const searchQuery = queryParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
-      
+
       // Show "Show more" button if we got 11 listings (indicating there might be more)
       if (data.length >= 11) {
         setShowMore(true);
@@ -76,7 +76,8 @@ export default function Search() {
     if (
       e.target.id === 'all' ||
       e.target.id === 'rent' ||
-      e.target.id === 'sale'
+      e.target.id === 'sale' ||
+      e.target.id === 'night-stay'
     ) {
       setSidebardata({ ...sidebardata, type: e.target.id });
     }
@@ -120,11 +121,11 @@ export default function Search() {
   const onShowMoreClick = async () => {
     const numberOfListings = listings.length;
     const startIndex = numberOfListings;
-    
+
     // Build query params
     const queryParams = new URLSearchParams();
     const urlParams = new URLSearchParams(location.search);
-    
+
     if (urlParams.get('searchTerm')) queryParams.set('searchTerm', urlParams.get('searchTerm'));
     if (urlParams.get('type') && urlParams.get('type') !== 'all') queryParams.set('type', urlParams.get('type'));
     if (urlParams.get('parking') === 'true') queryParams.set('parking', 'true');
@@ -134,11 +135,11 @@ export default function Search() {
     queryParams.set('order', urlParams.get('order') || 'desc');
     queryParams.set('startIndex', startIndex);
     queryParams.set('limit', '11');
-    
+
     const searchQuery = queryParams.toString();
     const res = await fetch(`/api/listing/get?${searchQuery}`);
     const data = await res.json();
-    
+
     // Hide "Show more" button if we got less than 11 listings (no more to load)
     if (data.length < 11) {
       setShowMore(false);
@@ -173,7 +174,7 @@ export default function Search() {
                 onChange={handleChange}
                 checked={sidebardata.type === 'all'}
               />
-              <span>Rent & Sale</span>
+              <span>All Types</span>
             </div>
             <div className='flex gap-2'>
               <input
@@ -194,6 +195,16 @@ export default function Search() {
                 checked={sidebardata.type === 'sale'}
               />
               <span>Sale</span>
+            </div>
+            <div className='flex gap-2'>
+              <input
+                type='checkbox'
+                id='night-stay'
+                className='w-5'
+                onChange={handleChange}
+                checked={sidebardata.type === 'night-stay'}
+              />
+              <span>Night-Stay</span>
             </div>
             <div className='flex gap-2'>
               <input

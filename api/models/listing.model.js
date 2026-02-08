@@ -54,6 +54,30 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    listingSubType: {
+      type: String,
+      default: 'none',
+    },
+    bbqEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    campfireEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    soundSystemEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    maxGuests: {
+      type: Number,
+      default: 0,
+    },
+    categories: {
+      type: [String],
+      default: [],
+    },
     bbqRates: {
       chicken: {
         type: Number,

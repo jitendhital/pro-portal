@@ -302,7 +302,7 @@ export default function MultiStepWizard({
       <div className="space-y-6">
         <div>
           <label htmlFor="regularPrice" className="block text-sm font-medium text-purple-700 mb-2">
-            Regular Price <span className="text-red-500">*</span>
+            Regular Price (Rs) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -339,7 +339,7 @@ export default function MultiStepWizard({
         {formData.offer && (
           <div>
             <label htmlFor="discountPrice" className="block text-sm font-medium text-purple-700 mb-2">
-              Discount Price <span className="text-red-500">*</span>
+              Discount Price (Rs) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"

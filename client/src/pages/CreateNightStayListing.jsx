@@ -63,7 +63,7 @@ export default function CreateNightStayListing() {
     // wizardFormData already contains all night-stay specific data
     const finalData = {
       ...wizardFormData,
-      type: 'rent', // Night-stay uses rent type in backend
+      type: 'night-stay', // Use consistent night-stay type
       listingSubType: 'night-stay',
       bedrooms: wizardFormData.bedrooms || 1,
       regularPrice: parseFloat(wizardFormData.regularPrice),

@@ -17,6 +17,7 @@ import {
 import Contact from '../components/Contact';
 import BookVisit from '../components/BookVisit';
 import NightStayBookingModal from '../components/NightStayBookingModal';
+import PropertyBookingModal from '../components/PropertyBookingModal';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import ShareButton from '../components/ShareButton';
 import { useFavorites } from '../hooks/useFavorites';
@@ -31,6 +32,7 @@ export default function Listing() {
   const [contact, setContact] = useState(false);
   const [showBookVisit, setShowBookVisit] = useState(false);
   const [showNightStayBooking, setShowNightStayBooking] = useState(false);
+  const [showPropertyBooking, setShowPropertyBooking] = useState(false);
   const [unavailableDates, setUnavailableDates] = useState([]);
   const [allListings, setAllListings] = useState([]);
   const params = useParams();
@@ -167,7 +169,7 @@ export default function Listing() {
           </div>
           <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
             <p className='text-2xl font-semibold'>
-              {listing.name} - ${' '}
+              {listing.name} - Rs{' '}
               {listing.offer
                 ? listing.discountPrice.toLocaleString('en-US')
                 : listing.regularPrice.toLocaleString('en-US')}
@@ -222,10 +224,10 @@ export default function Listing() {
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
               </li>
             </ul>
-            {currentUser && listing.userRef !== currentUser._id && !contact && !showBookVisit && !showNightStayBooking && (
+            {currentUser && listing.userRef !== currentUser._id && !contact && !showBookVisit && !showNightStayBooking && !showPropertyBooking && (
               <div className='flex gap-3 flex-wrap'>
-                {/* Show Night-Stay booking button if it's a night-stay listing or ANY rent listing */}
-                {(listing.listingSubType === 'night-stay' || listing.type === 'rent') ? (
+                {/* Night-Stay Listing: Show Book One-Night Stay */}
+                {listing.listingSubType === 'night-stay' ? (
                   <>
                     <button
                       onClick={() => setShowNightStayBooking(true)}
@@ -240,17 +242,46 @@ export default function Listing() {
                       Contact landlord
                     </button>
                   </>
-                ) : (
+                ) : listing.type === 'rent' ? (
+                  /* Normal Rent Listing: Show Book Visit Time and Book Property */
                   <>
                     <button
                       onClick={() => setShowBookVisit(true)}
-                      className='bg-purple-600 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1'
+                      className='bg-purple-600 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 font-semibold'
+                    >
+                      📅 Book Visit Time
+                    </button>
+                    <button
+                      onClick={() => setShowPropertyBooking(true)}
+                      className='bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 font-semibold shadow-md'
+                    >
+                      🏠 Book Property
+                    </button>
+                    <button
+                      onClick={() => setContact(true)}
+                      className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 font-semibold'
+                    >
+                      Contact landlord
+                    </button>
+                  </>
+                ) : (
+                  /* Sale Listing: Show Book a Visit and Book Property */
+                  <>
+                    <button
+                      onClick={() => setShowBookVisit(true)}
+                      className='bg-purple-600 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 font-semibold'
                     >
                       📅 Book a Visit
                     </button>
                     <button
+                      onClick={() => setShowPropertyBooking(true)}
+                      className='bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 font-semibold shadow-md'
+                    >
+                      🏠 Book Property
+                    </button>
+                    <button
                       onClick={() => setContact(true)}
-                      className='bg-purple-600 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1'
+                      className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3 flex-1 font-semibold'
                     >
                       Contact landlord
                     </button>
@@ -264,6 +295,12 @@ export default function Listing() {
                 listing={listing}
                 onClose={() => setShowNightStayBooking(false)}
                 unavailableDates={unavailableDates}
+              />
+            )}
+            {showPropertyBooking && (
+              <PropertyBookingModal
+                listing={listing}
+                onClose={() => setShowPropertyBooking(false)}
               />
             )}
             {contact && <Contact listing={listing} />}

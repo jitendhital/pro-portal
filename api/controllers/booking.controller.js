@@ -39,9 +39,10 @@ export const createBooking = async (req, res, next) => {
     }
 
     const isNightStay = property.listingSubType === 'night-stay' || (property.type === 'rent' && property.bbqEnabled);
+    const isPropertyBooking = req.body.bookingType === 'property';
 
-    if (!isNightStay && !timeSlot) {
-      return next(errorHandler(400, 'Time slot is required for regular bookings'));
+    if (!isNightStay && !isPropertyBooking && !timeSlot) {
+      return next(errorHandler(400, 'Time slot is required for regular visit bookings'));
     }
 
     // Check if buyer is trying to book their own property
@@ -83,6 +84,14 @@ export const createBooking = async (req, res, next) => {
       }
     }
 
+    // Determine bookingType
+    let bookingType = 'visit';
+    if (isNightStay) {
+      bookingType = 'night-stay';
+    } else if (req.body.bookingType === 'property') {
+      bookingType = 'property';
+    }
+
     // Create booking
     const booking = await Booking.create({
       propertyId,
@@ -100,6 +109,7 @@ export const createBooking = async (req, res, next) => {
       soundSystemEnabled: soundSystemEnabled || false,
       totalPrice: finalTotalPrice,
       status: 'pending',
+      bookingType,
     });
 
     const { __v, ...bookingResponse } = booking._doc;
@@ -193,6 +203,9 @@ export const updateBookingStatus = async (req, res, next) => {
 
     // Update booking status
     booking.status = status;
+    if (status === 'approved') {
+      booking.approvedAt = new Date();
+    }
     if (sellerNote) {
       booking.sellerNote = sellerNote;
     }
@@ -279,6 +292,46 @@ export const cancelBooking = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: 'Booking cancelled successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete/Remove a booking (by seller, e.g. after 48h unresponsive)
+export const deleteBooking = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = req.user.id;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return next(errorHandler(404, 'Booking not found'));
+    }
+
+    // Only the seller can delete/remove the booking
+    if (booking.sellerId !== userId) {
+      return next(errorHandler(403, 'You can only remove bookings for your own properties'));
+    }
+
+    // According to user rule: lister can remove booking if user didn't contact in 2 days (48 hours)
+    // We only enforce this for approved bookings of type 'property'
+    if (booking.bookingType === 'property' && booking.status === 'approved') {
+      const now = new Date();
+      const approvedAt = new Date(booking.approvedAt);
+      const diffHours = (now - approvedAt) / (1000 * 60 * 60);
+
+      if (diffHours < 48) {
+        return next(errorHandler(400, 'You can only remove this booking after 48 hours of approval if the buyer is unresponsive.'));
+      }
+    }
+
+    await Booking.findByIdAndDelete(bookingId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Booking removed successfully',
     });
   } catch (error) {
     next(error);

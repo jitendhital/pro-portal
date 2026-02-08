@@ -8,6 +8,7 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const isAuthPage = ['/signIn', '/signUp'].includes(location.pathname);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,7 +30,7 @@ export default function Header() {
     // Header container with a purple-tinted background and a subtle shadow
     <header className="bg-purple-100 shadow-md">
       {/* Inner div to control spacing and alignment */}
-      <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
+      <div className={`flex items-center max-w-6xl mx-auto p-3 ${isAuthPage ? 'justify-center' : 'justify-between'}`}>
         {/* Logo */}
         <Link to="/">
           <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
@@ -39,7 +40,7 @@ export default function Header() {
         </Link>
 
         {/* Search Form */}
-        {!['/signIn', '/signUp'].includes(location.pathname) && (
+        {!isAuthPage && (
           <form onSubmit={handleSubmit} className="bg-purple-50 p-3 rounded-lg flex items-center border border-purple-200">
             <input
               type="text"
@@ -56,7 +57,7 @@ export default function Header() {
         )}
 
         {/* Navigation Links */}
-        {!['/signIn', '/signUp'].includes(location.pathname) && (
+        {!isAuthPage && (
           <ul className="flex gap-4 items-center">
             <Link to="/">
               <li className="hidden sm:inline text-purple-700 hover:text-purple-900 hover:underline transition-colors font-medium">

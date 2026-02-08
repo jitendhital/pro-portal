@@ -35,6 +35,14 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    bookingType: {
+      type: String,
+      enum: ['visit', 'night-stay', 'property'],
+      default: 'visit',
+    },
+    approvedAt: {
+      type: Date,
+    },
     // Night-Stay specific fields
     guests: {
       type: Number,

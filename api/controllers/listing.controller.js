@@ -54,9 +54,9 @@ export const createListing = async (req, res, next) => {
     }
 
     // Validate type
-    const validTypes = ['sale', 'rent'];
+    const validTypes = ['sale', 'rent', 'night-stay'];
     if (!validTypes.includes(listingData.type.toLowerCase())) {
-      return next(errorHandler(400, 'Type must be either "sale" or "rent"'));
+      return next(errorHandler(400, 'Type must be either "sale", "rent", or "night-stay"'));
     }
 
     // Validate imageUrls is an array
@@ -190,9 +190,9 @@ export const updateListing = async (req, res, next) => {
 
     // Validate type if provided
     if (updateData.type) {
-      const validTypes = ['sale', 'rent'];
+      const validTypes = ['sale', 'rent', 'night-stay'];
       if (!validTypes.includes(updateData.type.toLowerCase())) {
-        return next(errorHandler(400, 'Type must be either "sale" or "rent"'));
+        return next(errorHandler(400, 'Type must be either "sale", "rent", or "night-stay"'));
       }
     }
 
@@ -270,23 +270,46 @@ export const getListings = async (req, res, next) => {
     let type = req.query.type;
 
     if (type === undefined || type === 'all') {
-      type = { $in: ['sale', 'rent'] };
+      type = { $in: ['sale', 'rent', 'night-stay'] };
     }
 
     const searchTerm = req.query.searchTerm || '';
-
     const sort = req.query.sort || 'createdAt';
-
     const order = req.query.order || 'desc';
 
-    const listings = await Listing.find({
+    const query = {
       name: { $regex: searchTerm, $options: 'i' },
       offer,
       furnished,
       parking,
       type,
       ...(req.user && { userRef: { $ne: req.user.id } }),
-    })
+    };
+
+    // Add Night-Stay specific filters only if they are true
+    if (req.query.bbqAvailable === 'true') query.bbqEnabled = true;
+    if (req.query.campfireAvailable === 'true') query.campfireEnabled = true;
+    if (req.query.soundSystemAvailable === 'true') query.soundSystemEnabled = true;
+
+    // Add maxGuests filter if provided
+    if (req.query.maxGuests) {
+      query.maxGuests = { $gte: parseInt(req.query.maxGuests) };
+    }
+
+    // Add category filter if provided
+    if (req.query.category) {
+      const categories = req.query.category.split(',');
+      query.categories = { $in: categories };
+    }
+
+    // Add price range filter
+    if (req.query.minPrice || req.query.maxPrice) {
+      query.regularPrice = {};
+      if (req.query.minPrice) query.regularPrice.$gte = parseFloat(req.query.minPrice);
+      if (req.query.maxPrice) query.regularPrice.$lte = parseFloat(req.query.maxPrice);
+    }
+
+    const listings = await Listing.find(query)
       .sort({ [sort]: order })
       .limit(limit)
       .skip(startIndex);

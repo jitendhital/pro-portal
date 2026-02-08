@@ -136,7 +136,9 @@ export default function BookVisit({ listing, onClose }) {
   return (
     <div className='flex flex-col gap-4 p-4 border rounded-lg bg-white'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-lg font-semibold'>Book a Visit</h3>
+        <h3 className='text-lg font-semibold'>
+          {listing.type === 'rent' ? 'Book Visit Time' : 'Book a Visit'}
+        </h3>
         <button
           onClick={onClose}
           className='text-gray-500 hover:text-gray-700 text-xl'
@@ -177,8 +179,8 @@ export default function BookVisit({ listing, onClose }) {
                   setError('');
                 }}
                 className={`p-2 rounded-lg border text-sm transition-all ${formData.timeSlot === slot
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50'
+                  ? 'bg-purple-600 text-white border-purple-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50'
                   }`}
               >
                 {slot}

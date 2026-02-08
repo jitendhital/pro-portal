@@ -21,7 +21,7 @@ export default function EnhancedSearch() {
   // Filter state
   const [filters, setFilters] = useState({
     searchTerm: '',
-    listingType: 'all', // 'all', 'sell', 'rent', 'night-stay'
+    type: 'all', // Matches backend 'type' parameter
     parking: false,
     furnished: false,
     offer: false,
@@ -43,7 +43,7 @@ export default function EnhancedSearch() {
     const urlParams = new URLSearchParams(location.search);
     const newFilters = {
       searchTerm: urlParams.get('searchTerm') || '',
-      listingType: urlParams.get('listingType') || 'all',
+      type: urlParams.get('type') || 'all',
       parking: urlParams.get('parking') === 'true',
       furnished: urlParams.get('furnished') === 'true',
       offer: urlParams.get('offer') === 'true',
@@ -56,11 +56,10 @@ export default function EnhancedSearch() {
       maxPrice: urlParams.get('maxPrice') || '',
       availableDate: urlParams.get('availableDate') || '',
       sort: urlParams.get('sort') || 'createdAt',
-      order: urlParams.get('order') || 'desc',
     };
-    
+
     setFilters(newFilters);
-  }, []);
+  }, [location.search]); // Sync state with URL when it changes (back/forward or manual nav)
 
   // Fetch listings when URL changes
   useEffect(() => {
@@ -72,41 +71,41 @@ export default function EnhancedSearch() {
   const fetchListings = async () => {
     setLoading(true);
     setShowMore(false);
-    
+
     try {
       const urlParams = new URLSearchParams(location.search);
       const queryParams = new URLSearchParams();
-      
+
       // Copy all URL params to query params
       urlParams.forEach((value, key) => {
         queryParams.set(key, value);
       });
-      
+
       queryParams.set('limit', '12');
-      
+
       const searchQuery = queryParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
-      
+
       // Client-side filtering for Night-Stay specific filters (since backend may not support all)
       let filteredData = data;
-      
-      if (urlParams.get('listingType') === 'night-stay') {
+
+      if (urlParams.get('type') === 'night-stay') {
         filteredData = data.filter((listing) => {
           // Filter by Night-Stay sub-type
-          if (listing.listingSubType !== 'night-stay' && !listing.bbqEnabled) return false;
-          
+          if (listing.type !== 'night-stay' && listing.listingSubType !== 'night-stay' && !listing.bbqEnabled) return false;
+
           // Filter by add-ons
           if (urlParams.get('bbqAvailable') === 'true' && !listing.bbqEnabled) return false;
           if (urlParams.get('campfireAvailable') === 'true' && !listing.campfireEnabled) return false;
           if (urlParams.get('soundSystemAvailable') === 'true' && !listing.soundSystemEnabled) return false;
-          
+
           // Filter by max guests
           if (urlParams.get('maxGuests')) {
             const maxGuests = parseInt(urlParams.get('maxGuests'));
             if (listing.maxGuests && listing.maxGuests < maxGuests) return false;
           }
-          
+
           // Filter by category
           if (urlParams.get('category')) {
             const categories = urlParams.get('category').split(',');
@@ -114,16 +113,16 @@ export default function EnhancedSearch() {
               return false;
             }
           }
-          
+
           // Filter by price range
           const price = parseFloat(listing.regularPrice);
           if (urlParams.get('minPrice') && price < parseFloat(urlParams.get('minPrice'))) return false;
           if (urlParams.get('maxPrice') && price > parseFloat(urlParams.get('maxPrice'))) return false;
-          
+
           return true;
         });
       }
-      
+
       if (filteredData.length >= 12) {
         setShowMore(true);
       }
@@ -136,7 +135,22 @@ export default function EnhancedSearch() {
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters({ ...filters, [key]: value });
+    let newFilters = { ...filters, [key]: value };
+
+    // Clear Night-Stay specific filters if type is changed to something else
+    if (key === 'type' && value !== 'night-stay') {
+      newFilters = {
+        ...newFilters,
+        bbqAvailable: false,
+        campfireAvailable: false,
+        soundSystemAvailable: false,
+        maxGuests: '',
+        category: [],
+        availableDate: '',
+      };
+    }
+
+    setFilters(newFilters);
   };
 
   const handleCategoryToggle = (category) => {
@@ -148,9 +162,18 @@ export default function EnhancedSearch() {
 
   const applyFilters = () => {
     const urlParams = new URLSearchParams();
-    
+
     Object.keys(filters).forEach((key) => {
       const value = filters[key];
+
+      // Skip irrelevant filters based on type
+      if (filters.type !== 'night-stay' && [
+        'bbqAvailable', 'campfireAvailable', 'soundSystemAvailable',
+        'maxGuests', 'category', 'availableDate'
+      ].includes(key)) {
+        return;
+      }
+
       if (value && value !== '' && value !== false) {
         if (Array.isArray(value)) {
           if (value.length > 0) urlParams.set(key, value.join(','));
@@ -159,7 +182,7 @@ export default function EnhancedSearch() {
         }
       }
     });
-    
+
     navigate(`/search?${urlParams.toString()}`);
     setShowMobileFilters(false);
   };
@@ -192,10 +215,10 @@ export default function EnhancedSearch() {
     const urlParams = new URLSearchParams(location.search);
     urlParams.set('startIndex', numberOfListings);
     urlParams.set('limit', '12');
-    
+
     const res = await fetch(`/api/listing/get?${urlParams.toString()}`);
     const data = await res.json();
-    
+
     if (data.length < 12) {
       setShowMore(false);
     }
@@ -216,7 +239,7 @@ export default function EnhancedSearch() {
           </button>
         </div>
       )}
-      
+
       <div className="space-y-6">
         {/* Search Term */}
         <div>
@@ -242,9 +265,9 @@ export default function EnhancedSearch() {
               <label key={type} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="listingType"
-                  checked={filters.listingType === type}
-                  onChange={() => handleFilterChange('listingType', type)}
+                  name="type"
+                  checked={filters.type === type}
+                  onChange={() => handleFilterChange('type', type)}
                   className="w-4 h-4 text-purple-600 focus:ring-purple-500"
                 />
                 <span className="capitalize">{type === 'all' ? 'All Types' : type === 'night-stay' ? 'Night-Stay' : type}</span>
@@ -290,7 +313,7 @@ export default function EnhancedSearch() {
         </div>
 
         {/* Night-Stay Specific Filters */}
-        {filters.listingType === 'night-stay' && (
+        {filters.type === 'night-stay' && (
           <div className="space-y-4 pt-4 border-t border-purple-200">
             <h3 className="font-semibold text-purple-800">Night-Stay Filters</h3>
 
@@ -356,11 +379,10 @@ export default function EnhancedSearch() {
                     key={cat}
                     type="button"
                     onClick={() => handleCategoryToggle(cat)}
-                    className={`px-3 py-1 rounded-lg border-2 transition-all capitalize text-sm ${
-                      filters.category.includes(cat)
-                        ? 'bg-purple-600 text-white border-purple-600'
-                        : 'bg-white text-purple-700 border-purple-300 hover:border-purple-500'
-                    }`}
+                    className={`px-3 py-1 rounded-lg border-2 transition-all capitalize text-sm ${filters.category.includes(cat)
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'bg-white text-purple-700 border-purple-300 hover:border-purple-500'
+                      }`}
                   >
                     {cat}
                   </button>
@@ -372,7 +394,7 @@ export default function EnhancedSearch() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm font-medium text-purple-700 mb-2">
-                  Min Price
+                  Min Price (Rs)
                 </label>
                 <input
                   type="number"
@@ -385,7 +407,7 @@ export default function EnhancedSearch() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-purple-700 mb-2">
-                  Max Price
+                  Max Price (Rs)
                 </label>
                 <input
                   type="number"

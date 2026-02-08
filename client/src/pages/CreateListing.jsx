@@ -15,7 +15,7 @@ export default function CreateListing() {
     type: 'rent',
     bedrooms: 1,
     bathrooms: 1,
-    regularPrice: 50,
+    regularPrice: 50000,
     discountPrice: 0,
     offer: false,
     parking: false,
@@ -202,7 +202,7 @@ export default function CreateListing() {
             value={formData.address}
             onChange={handleChange}
           />
-          
+
           <div className='flex gap-6 flex-wrap'>
             <div className='flex gap-2'>
               <input
@@ -297,7 +297,7 @@ export default function CreateListing() {
               <div className='flex flex-col items-center'>
                 <p>Regular price</p>
                 {formData.type === 'rent' && (
-                  <span className='text-xs'>($ / month)</span>
+                  <span className='text-xs'>(Rs / month)</span>
                 )}
               </div>
             </div>
@@ -317,14 +317,14 @@ export default function CreateListing() {
                   <p>Discounted price</p>
 
                   {formData.type === 'rent' && (
-                    <span className='text-xs'>($ / month)</span>
+                    <span className='text-xs'>(Rs / month)</span>
                   )}
                 </div>
               </div>
             )}
           </div>
         </div>
-        
+
         <div className='flex flex-col flex-1 gap-4'>
           <p className='font-semibold'>
             Images:
