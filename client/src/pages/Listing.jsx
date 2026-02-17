@@ -23,6 +23,7 @@ import ShareButton from '../components/ShareButton';
 import { useFavorites } from '../hooks/useFavorites';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import SimilarProperties from '../components/SimilarProperties';
+import ListingDetailsModal from '../components/ListingDetailsModal';
 
 export default function Listing() {
   const [listing, setListing] = useState(null);
@@ -33,6 +34,7 @@ export default function Listing() {
   const [showBookVisit, setShowBookVisit] = useState(false);
   const [showNightStayBooking, setShowNightStayBooking] = useState(false);
   const [showPropertyBooking, setShowPropertyBooking] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [unavailableDates, setUnavailableDates] = useState([]);
   const [allListings, setAllListings] = useState([]);
   const params = useParams();
@@ -111,7 +113,7 @@ export default function Listing() {
   }, [params.listingId]);
 
   return (
-    <main className='w-full'>
+    <main className='w-full dark:bg-slate-900 transition-colors duration-300'>
       {loading && (
         <div className='max-w-4xl mx-auto p-3 my-7'>
           <SkeletonLoader type="listing-detail" />
@@ -154,7 +156,7 @@ export default function Listing() {
           <div className='fixed top-[13%] right-[3%] z-10 flex flex-col gap-3'>
             <button
               onClick={() => toggleFavorite(listing._id)}
-              className='border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg hover:bg-purple-50 transition-colors cursor-pointer'
+              className='border rounded-full w-12 h-12 flex justify-center items-center bg-white dark:bg-slate-800 shadow-lg hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors cursor-pointer'
               aria-label={isFavorite(listing._id) ? 'Remove from favorites' : 'Add to favorites'}
             >
               {isFavorite(listing._id) ? (
@@ -163,19 +165,19 @@ export default function Listing() {
                 <FaRegHeart className='text-purple-600 text-xl' />
               )}
             </button>
-            <div className='border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg hover:bg-purple-50 transition-colors cursor-pointer'>
+            <div className='border rounded-full w-12 h-12 flex justify-center items-center bg-white dark:bg-slate-800 shadow-lg hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors cursor-pointer'>
               <ShareButton listingId={listing._id} listingName={listing.name} />
             </div>
           </div>
           <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
-            <p className='text-2xl font-semibold'>
+            <p className='text-2xl font-semibold dark:text-slate-100'>
               {listing.name} - Rs{' '}
               {listing.offer
                 ? listing.discountPrice.toLocaleString('en-US')
                 : listing.regularPrice.toLocaleString('en-US')}
               {listing.listingSubType === 'night-stay' ? ' / night' : (listing.type === 'rent' && ' / month')}
             </p>
-            <p className='flex items-center mt-6 gap-2 text-slate-600  text-sm'>
+            <p className='flex items-center mt-6 gap-2 text-slate-600 dark:text-slate-400 text-sm'>
               <FaMapMarkerAlt className='text-green-700' />
               {listing.address}
             </p>
@@ -187,10 +189,10 @@ export default function Listing() {
                   : 'bg-blue-900'
                 }`}>
                 {listing.listingSubType === 'night-stay'
-                  ? '🌙 Night-Stay Experience'
+                  ? 'Stay'
                   : listing.type === 'rent'
-                    ? 'For Rent'
-                    : 'For Sale'}
+                    ? 'Rent'
+                    : 'Sale'}
               </p>
               {listing.offer && (
                 <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
@@ -198,11 +200,11 @@ export default function Listing() {
                 </p>
               )}
             </div>
-            <p className='text-slate-800'>
-              <span className='font-semibold text-black'>Description - </span>
+            <p className='text-slate-800 dark:text-slate-300'>
+              <span className='font-semibold text-black dark:text-slate-100'>Description - </span>
               {listing.description}
             </p>
-            <ul className='text-green-900 font-semibold text-sm flex flex-wrap items-center gap-4 sm:gap-6'>
+            <ul className='text-green-900 dark:text-green-400 font-semibold text-sm flex flex-wrap items-center gap-4 sm:gap-6'>
               <li className='flex items-center gap-1 whitespace-nowrap '>
                 <FaBed className='text-lg' />
                 {listing.bedrooms > 1
@@ -222,6 +224,14 @@ export default function Listing() {
               <li className='flex items-center gap-1 whitespace-nowrap '>
                 <FaChair className='text-lg' />
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
+              </li>
+              <li className='flex items-center gap-1 whitespace-nowrap'>
+                <button
+                  onClick={() => setShowDetailsModal(true)}
+                  className='text-purple-700 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 underline font-bold cursor-pointer transition-colors'
+                >
+                  View Details
+                </button>
               </li>
             </ul>
             {currentUser && listing.userRef !== currentUser._id && !contact && !showBookVisit && !showNightStayBooking && !showPropertyBooking && (
@@ -301,6 +311,12 @@ export default function Listing() {
               <PropertyBookingModal
                 listing={listing}
                 onClose={() => setShowPropertyBooking(false)}
+              />
+            )}
+            {showDetailsModal && (
+              <ListingDetailsModal
+                listing={listing}
+                onClose={() => setShowDetailsModal(false)}
               />
             )}
             {contact && <Contact listing={listing} />}

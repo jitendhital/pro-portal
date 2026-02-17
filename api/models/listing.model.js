@@ -70,6 +70,14 @@ const listingSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    campfirePrice: {
+      type: Number,
+      default: 0,
+    },
+    soundSystemPrice: {
+      type: Number,
+      default: 0,
+    },
     maxGuests: {
       type: Number,
       default: 0,

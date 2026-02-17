@@ -70,6 +70,8 @@ export default function CreateNightStayListing() {
       discountPrice: wizardFormData.offer ? parseFloat(wizardFormData.discountPrice) : 0,
       userRef: currentUser._id,
       bbqRates: wizardFormData.bbqRates || { chicken: 700, mutton: 2000, fish: 1500 }, // Include custom rates
+      campfirePrice: wizardFormData.campfireEnabled ? parseFloat(wizardFormData.campfirePrice) : 0,
+      soundSystemPrice: wizardFormData.soundSystemEnabled ? parseFloat(wizardFormData.soundSystemPrice) : 0,
     };
 
     setLoading(true);

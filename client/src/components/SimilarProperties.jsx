@@ -37,7 +37,7 @@ export default function SimilarProperties({ currentListing, allListings = [] }) 
   if (loading) {
     return (
       <div className="mt-8">
-        <h2 className="text-2xl font-semibold text-purple-700 mb-4 flex items-center gap-2">
+        <h2 className="text-2xl font-semibold text-purple-700 dark:text-purple-400 mb-4 flex items-center gap-2">
           <FaStar className="text-purple-500" />
           Similar Properties (AI Recommended)
         </h2>
@@ -55,15 +55,15 @@ export default function SimilarProperties({ currentListing, allListings = [] }) 
   }
 
   return (
-    <div className="mt-8 border-t pt-8">
+    <div className="mt-8 border-t dark:border-slate-700 pt-8">
       <h2 className="text-2xl font-semibold text-purple-700 mb-4 flex items-center gap-2">
         <FaStar className="text-purple-500" />
         Similar Properties
-        <span className="text-sm font-normal text-purple-500">
+        <span className="text-sm font-normal text-purple-500 dark:text-purple-400">
           (AI Recommended - Score: {similarProperties[0]?.recommendationScore?.toFixed(1)}%)
         </span>
       </h2>
-      <p className="text-sm text-purple-600 mb-4">
+      <p className="text-sm text-purple-600 dark:text-purple-400 mb-4">
         Properties similar to this one, calculated using our recommendation algorithm
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

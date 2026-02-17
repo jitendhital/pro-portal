@@ -139,10 +139,13 @@ export default function UpdateListing() {
         discountPrice: wizardFormData.offer ? parseFloat(wizardFormData.discountPrice) : 0,
       };
 
-      // For night-stay, ensure listingSubType is set
       if (listingType === 'night-stay') {
-        updateData.type = 'rent'; // Night-stay uses rent type in backend
+        updateData.type = 'night-stay';
         updateData.listingSubType = 'night-stay';
+        // Add prices and rates for night-stay
+        updateData.campfirePrice = wizardFormData.campfireEnabled ? parseFloat(wizardFormData.campfirePrice) : 0;
+        updateData.soundSystemPrice = wizardFormData.soundSystemEnabled ? parseFloat(wizardFormData.soundSystemPrice) : 0;
+        updateData.bbqRates = wizardFormData.bbqRates;
       } else {
         updateData.type = listingType === 'sell' ? 'sale' : 'rent';
       }

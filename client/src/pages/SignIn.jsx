@@ -56,22 +56,22 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white/95 backdrop-blur rounded-2xl shadow-xl border border-slate-200">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-6 transition-colors duration-300">
+      <div className="w-full max-w-md bg-white/95 dark:bg-slate-800/95 backdrop-blur rounded-2xl shadow-xl dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-700">
         {/* Top pill/title */}
         <div className="px-8 pt-6 pb-4">
-          <div className="inline-block px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold text-sm">
+          <div className="inline-block px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-semibold text-sm">
             Sign In
           </div>
         </div>
 
         <div className="px-8 pb-8">
-          <h1 className="text-2xl font-extrabold text-slate-900">Sign in to your account</h1>
-          <p className="mt-2 text-sm text-slate-500">Welcome back! Please enter your details.</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Sign in to your account</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Welcome back! Please enter your details.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4" aria-label="signin form">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Email
               </label>
               <input
@@ -79,14 +79,14 @@ export default function SignIn() {
                 name="email"
                 type="email"
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="mt-1 block w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="you@example.com"
                 onChange={handleChange}
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Password
               </label>
               <input
@@ -94,7 +94,7 @@ export default function SignIn() {
                 name="password"
                 type="password"
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="mt-1 block w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="Enter your password"
                 onChange={handleChange}
               />
@@ -107,23 +107,23 @@ export default function SignIn() {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
-            {error && <div className="mt-4 text-red-600 text-center">{error}</div>}
+            {error && <div className="mt-4 text-red-600 dark:text-red-400 text-center">{error}</div>}
           </form>
 
           <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-xs text-slate-400">or</span>
-            <div className="flex-1 h-px bg-slate-200" />
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
+            <span className="text-xs text-slate-400 dark:text-slate-500">or</span>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
           </div>
           <OAuth />
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
             Don't have an account?{" "}
-            <Link to="/signUp" className="font-semibold text-purple-600 hover:underline">
+            <Link to="/signUp" className="font-semibold text-purple-600 dark:text-purple-400 hover:underline">
               Sign up
             </Link>
           </p>
 
-          <p className="mt-4 text-xs text-slate-400 text-center">
+          <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 text-center">
             By signing in you agree to our{" "}
             <Link to="/terms" className="underline">
               Terms
@@ -139,3 +139,4 @@ export default function SignIn() {
     </div>
   );
 }
+

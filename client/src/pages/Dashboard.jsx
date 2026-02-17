@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [sellerBookings, setSellerBookings] = useState([]);
   const [buyerBookings, setBuyerBookings] = useState([]);
   const [userListings, setUserListings] = useState([]);
+  const [listingFilter, setListingFilter] = useState('all');
   const [loading, setLoading] = useState({ seller: false, buyer: false, listings: false });
   const [error, setError] = useState({ seller: '', buyer: '', listings: '' });
 
@@ -167,8 +168,9 @@ export default function Dashboard() {
     }
   };
 
-  const handleRemoveBooking = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to remove this booking? This should only be done if the buyer has not contacted you within 48 hours.')) {
+  // Generalized delete handler
+  const handleDeleteBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
       return;
     }
 
@@ -182,12 +184,14 @@ export default function Dashboard() {
       const data = await res.json();
 
       if (!res.ok || data.success === false) {
-        alert(data.message || 'Failed to remove booking');
+        alert(data.message || 'Failed to delete booking');
         return;
       }
 
+      // Update both states to be safe
       setSellerBookings((prev) => prev.filter((b) => b._id !== bookingId));
-      alert('Booking removed successfully.');
+      setBuyerBookings((prev) => prev.filter((b) => b._id !== bookingId));
+      // success('Booking deleted successfully'); // If you had a toast
     } catch (error) {
       alert('An error occurred. Please try again.');
     } finally {
@@ -224,21 +228,21 @@ export default function Dashboard() {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-8'>
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8 transition-colors duration-300'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='mb-8'>
-          <h1 className='text-4xl font-bold text-slate-800 mb-2'>Dashboard</h1>
-          <p className='text-slate-600'>Manage your property visit bookings</p>
+          <h1 className='text-4xl font-bold text-slate-800 dark:text-slate-100 mb-2'>Dashboard</h1>
+          <p className='text-slate-600 dark:text-slate-400'>Manage your property visit bookings</p>
         </div>
 
         {/* Tab Navigation */}
-        <div className='flex gap-4 mb-6 border-b border-slate-200'>
+        <div className='flex gap-4 mb-6 border-b border-slate-200 dark:border-slate-700'>
           <button
             onClick={() => setActiveTab('seller')}
             className={`px-6 py-3 font-semibold transition-all relative ${activeTab === 'seller'
               ? 'text-purple-600 border-b-2 border-purple-600'
-              : 'text-slate-600 hover:text-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
           >
             <span className='flex items-center gap-2'>
@@ -255,7 +259,7 @@ export default function Dashboard() {
             onClick={() => setActiveTab('buyer')}
             className={`px-6 py-3 font-semibold transition-all relative ${activeTab === 'buyer'
               ? 'text-purple-600 border-b-2 border-purple-600'
-              : 'text-slate-600 hover:text-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
           >
             <span className='flex items-center gap-2'>
@@ -267,7 +271,7 @@ export default function Dashboard() {
             onClick={() => setActiveTab('listings')}
             className={`px-6 py-3 font-semibold transition-all relative ${activeTab === 'listings'
               ? 'text-purple-600 border-b-2 border-purple-600'
-              : 'text-slate-600 hover:text-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
           >
             <span className='flex items-center gap-2'>
@@ -285,37 +289,37 @@ export default function Dashboard() {
           <div>
             {/* Stats Cards */}
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-purple-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Total Requests</p>
-                    <p className='text-3xl font-bold text-slate-800'>{sellerStats.total}</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Total Requests</p>
+                    <p className='text-3xl font-bold text-slate-800 dark:text-slate-100'>{sellerStats.total}</p>
                   </div>
                   <FaHome className='text-3xl text-purple-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-yellow-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Pending</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Pending</p>
                     <p className='text-3xl font-bold text-yellow-600'>{sellerStats.pending}</p>
                   </div>
                   <FaHourglassHalf className='text-3xl text-yellow-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-green-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Approved</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Approved</p>
                     <p className='text-3xl font-bold text-green-600'>{sellerStats.approved}</p>
                   </div>
                   <FaCheckCircle className='text-3xl text-green-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-red-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Rejected</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Rejected</p>
                     <p className='text-3xl font-bold text-red-600'>{sellerStats.rejected}</p>
                   </div>
                   <FaTimesCircle className='text-3xl text-red-500' />
@@ -368,7 +372,7 @@ export default function Dashboard() {
                   return (
                     <div
                       key={booking._id}
-                      className='bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow'
+                      className='bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow'
                     >
                       <div className='flex flex-col md:flex-row gap-4'>
                         {/* Property Image */}
@@ -386,7 +390,7 @@ export default function Dashboard() {
                         <div className='flex-1 flex flex-col gap-3'>
                           <div className='flex items-start justify-between'>
                             <div>
-                              <h3 className='text-xl font-semibold text-slate-800'>
+                              <h3 className='text-xl font-semibold text-slate-800 dark:text-slate-100'>
                                 {property.name || 'Property'}
                               </h3>
                               <div className='flex gap-2 items-center mt-1'>
@@ -399,11 +403,21 @@ export default function Dashboard() {
                                 </p>
                               </div>
                             </div>
-                            <BookingStatusBadge status={booking.status} />
+                            <div className='flex items-center gap-2'>
+                              <BookingStatusBadge status={booking.status} />
+                              <button
+                                onClick={() => handleDeleteBooking(booking._id)}
+                                disabled={updating[booking._id]}
+                                className='bg-red-50 text-red-600 p-2 rounded-full hover:bg-red-100 transition-colors'
+                                title='Delete Booking'
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
                           </div>
 
                           <div className='grid grid-cols-1 md:grid-cols-2 gap-3 text-sm'>
-                            <div className='flex items-center gap-2 text-slate-700'>
+                            <div className='flex items-center gap-2 text-slate-700 dark:text-slate-300'>
                               <FaUser className='text-slate-500' />
                               <span>
                                 <strong>Buyer:</strong> {buyer.username || buyer.email || 'Unknown'}
@@ -424,8 +438,8 @@ export default function Dashboard() {
                           </div>
 
                           {booking.message && (
-                            <div className='bg-slate-50 p-3 rounded-lg'>
-                              <p className='text-sm text-slate-700'>
+                            <div className='bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg'>
+                              <p className='text-sm text-slate-700 dark:text-slate-300'>
                                 <strong>Message:</strong> {booking.message}
                               </p>
                             </div>
@@ -434,6 +448,7 @@ export default function Dashboard() {
                           {booking.status === 'approved' && booking.bookingType === 'property' && (
                             <div className='mt-2'>
                               {(() => {
+                                if (!booking.approvedAt) return null;
                                 const approvedAt = new Date(booking.approvedAt);
                                 const now = new Date();
                                 const diffHours = (now - approvedAt) / (1000 * 60 * 60);
@@ -451,7 +466,7 @@ export default function Dashboard() {
                                     </div>
                                     {isRemovable && (
                                       <button
-                                        onClick={() => handleRemoveBooking(booking._id)}
+                                        onClick={() => handleDeleteBooking(booking._id)}
                                         disabled={updating[booking._id]}
                                         className='bg-red-50 text-red-600 border border-red-200 rounded-lg px-4 py-2 hover:bg-red-600 hover:text-white transition-all text-sm font-semibold flex items-center justify-center gap-2'
                                       >
@@ -486,7 +501,7 @@ export default function Dashboard() {
                             </div>
                           )}
 
-                          <div className='text-xs text-slate-500 pt-2 border-t'>
+                          <div className='text-xs text-slate-500 dark:text-slate-400 pt-2 border-t dark:border-slate-700'>
                             Requested on:{' '}
                             {new Date(booking.createdAt).toLocaleString('en-US', {
                               dateStyle: 'medium',
@@ -508,37 +523,37 @@ export default function Dashboard() {
           <div>
             {/* Stats Cards */}
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-purple-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Total Bookings</p>
-                    <p className='text-3xl font-bold text-slate-800'>{buyerStats.total}</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Total Bookings</p>
+                    <p className='text-3xl font-bold text-slate-800 dark:text-slate-100'>{buyerStats.total}</p>
                   </div>
                   <FaCalendarAlt className='text-3xl text-purple-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-yellow-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Pending</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Pending</p>
                     <p className='text-3xl font-bold text-yellow-600'>{buyerStats.pending}</p>
                   </div>
                   <FaHourglassHalf className='text-3xl text-yellow-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-green-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Approved</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Approved</p>
                     <p className='text-3xl font-bold text-green-600'>{buyerStats.approved}</p>
                   </div>
                   <FaCheckCircle className='text-3xl text-green-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-red-500'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Rejected</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Rejected</p>
                     <p className='text-3xl font-bold text-red-600'>{buyerStats.rejected}</p>
                   </div>
                   <FaTimesCircle className='text-3xl text-red-500' />
@@ -572,7 +587,7 @@ export default function Dashboard() {
 
             {/* Empty State */}
             {!loading.buyer && buyerBookings.length === 0 && (
-              <div className='bg-white rounded-lg shadow-md p-12 text-center'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-12 text-center'>
                 <FaCalendarAlt className='text-6xl text-slate-300 mx-auto mb-4' />
                 <p className='text-slate-600 text-lg font-medium mb-2'>
                   You haven't made any booking requests yet
@@ -599,7 +614,7 @@ export default function Dashboard() {
                   return (
                     <div
                       key={booking._id}
-                      className='bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow'
+                      className='bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow'
                     >
                       <div className='flex flex-col md:flex-row gap-4'>
                         {/* Property Image */}
@@ -633,12 +648,12 @@ export default function Dashboard() {
                               {property._id ? (
                                 <h3
                                   onClick={() => navigate(`/listing/${property._id}`)}
-                                  className='text-xl font-semibold text-slate-800 hover:text-purple-600 cursor-pointer'
+                                  className='text-xl font-semibold text-slate-800 dark:text-slate-100 hover:text-purple-600 cursor-pointer'
                                 >
                                   {property.name || 'Property'}
                                 </h3>
                               ) : (
-                                <h3 className='text-xl font-semibold text-slate-800'>
+                                <h3 className='text-xl font-semibold text-slate-800 dark:text-slate-100'>
                                   {property.name || 'Property'}
                                 </h3>
                               )}
@@ -650,17 +665,27 @@ export default function Dashboard() {
                                 Seller: {seller.username || seller.email || 'Unknown'}
                               </p>
                             </div>
-                            <BookingStatusBadge status={booking.status} />
+                            <div className='flex items-center gap-2'>
+                              <BookingStatusBadge status={booking.status} />
+                              <button
+                                onClick={() => handleDeleteBooking(booking._id)}
+                                disabled={updating[booking._id]}
+                                className='bg-red-50 text-red-600 p-2 rounded-full hover:bg-red-100 transition-colors'
+                                title='Cancel/Delete Booking'
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
                           </div>
 
                           <div className='grid grid-cols-1 md:grid-cols-2 gap-3 text-sm'>
-                            <div className='flex items-center gap-2 text-slate-700'>
+                            <div className='flex items-center gap-2 text-slate-700 dark:text-slate-300'>
                               <FaCalendarAlt className='text-slate-500' />
                               <span>
                                 <strong>Date:</strong> {formatDate(booking.date)}
                               </span>
                             </div>
-                            <div className='flex items-center gap-2 text-slate-700'>
+                            <div className='flex items-center gap-2 text-slate-700 dark:text-slate-300'>
                               <FaClock className='text-slate-500' />
                               <span>
                                 <strong>Time:</strong> {booking.timeSlot}
@@ -669,14 +694,14 @@ export default function Dashboard() {
                           </div>
 
                           {booking.message && (
-                            <div className='bg-slate-50 p-3 rounded-lg'>
-                              <p className='text-sm text-slate-700'>
+                            <div className='bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg'>
+                              <p className='text-sm text-slate-700 dark:text-slate-300'>
                                 <strong>Your Message:</strong> {booking.message}
                               </p>
                             </div>
                           )}
 
-                          <div className='text-xs text-slate-500 pt-2 border-t'>
+                          <div className='text-xs text-slate-500 dark:text-slate-400 pt-2 border-t dark:border-slate-700'>
                             Requested on:{' '}
                             {new Date(booking.createdAt).toLocaleString('en-US', {
                               dateStyle: 'medium',
@@ -698,37 +723,49 @@ export default function Dashboard() {
           <div>
             {/* Stats Cards */}
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500'>
+              <div
+                onClick={() => setListingFilter('all')}
+                className={`bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-purple-500 cursor-pointer transition-all duration-200 hover:shadow-lg ${listingFilter === 'all' ? 'ring-2 ring-purple-400 scale-[1.02]' : ''}`}
+              >
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>Total Listings</p>
-                    <p className='text-3xl font-bold text-slate-800'>{listingStats.total}</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>Total Listings</p>
+                    <p className='text-3xl font-bold text-slate-800 dark:text-slate-100'>{listingStats.total}</p>
                   </div>
                   <FaBuilding className='text-3xl text-purple-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500'>
+              <div
+                onClick={() => setListingFilter('rent')}
+                className={`bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-blue-500 cursor-pointer transition-all duration-200 hover:shadow-lg ${listingFilter === 'rent' ? 'ring-2 ring-blue-400 scale-[1.02]' : ''}`}
+              >
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>For Rent</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>For Rent</p>
                     <p className='text-3xl font-bold text-blue-600'>{listingStats.rent}</p>
                   </div>
                   <FaHome className='text-3xl text-blue-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-cyan-500'>
+              <div
+                onClick={() => setListingFilter('stay')}
+                className={`bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-cyan-500 cursor-pointer transition-all duration-200 hover:shadow-lg ${listingFilter === 'stay' ? 'ring-2 ring-cyan-400 scale-[1.02]' : ''}`}
+              >
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>For Stay</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>For Stay</p>
                     <p className='text-3xl font-bold text-cyan-600'>{listingStats.stay}</p>
                   </div>
                   <FaMoon className='text-3xl text-cyan-500' />
                 </div>
               </div>
-              <div className='bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500'>
+              <div
+                onClick={() => setListingFilter('sale')}
+                className={`bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 border-l-4 border-green-500 cursor-pointer transition-all duration-200 hover:shadow-lg ${listingFilter === 'sale' ? 'ring-2 ring-green-400 scale-[1.02]' : ''}`}
+              >
                 <div className='flex items-center justify-between'>
                   <div>
-                    <p className='text-slate-600 text-sm font-medium'>For Sale</p>
+                    <p className='text-slate-600 dark:text-slate-400 text-sm font-medium'>For Sale</p>
                     <p className='text-3xl font-bold text-green-600'>{listingStats.sale}</p>
                   </div>
                   <FaCheckCircle className='text-3xl text-green-500' />
@@ -746,7 +783,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={fetchUserListings}
-                className='ml-3 bg-white border border-gray-300 text-gray-700 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2'
+                className='ml-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2'
               >
                 <span>Refresh</span>
               </button>
@@ -768,7 +805,7 @@ export default function Dashboard() {
 
             {/* Empty State */}
             {!loading.listings && userListings.length === 0 && (
-              <div className='bg-white rounded-lg shadow-md p-12 text-center'>
+              <div className='bg-white dark:bg-slate-800 rounded-lg shadow-md p-12 text-center'>
                 <FaBuilding className='text-6xl text-slate-300 mx-auto mb-4' />
                 <p className='text-slate-600 text-lg font-medium mb-2'>
                   You haven't posted any listings yet
@@ -788,54 +825,62 @@ export default function Dashboard() {
             {/* Listings List */}
             {!loading.listings && userListings.length > 0 && (
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {userListings.map((listing) => (
-                  <div
-                    key={listing._id}
-                    className='bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col'
-                  >
-                    <div className='relative h-48'>
-                      <img
-                        src={listing.imageUrls[0]}
-                        alt={listing.name}
-                        className='w-full h-full object-cover'
-                      />
-                      <div className='absolute top-2 right-2 bg-white px-2 py-1 rounded text-xs font-bold uppercase shadow-sm'>
-                        {listing.type === 'rent' ? (listing.listingSubType === 'night-stay' ? 'Night Stay' : 'Rent') : 'Sale'}
+                {userListings
+                  .filter((listing) => {
+                    if (listingFilter === 'all') return true;
+                    if (listingFilter === 'rent') return listing.type === 'rent' && listing.listingSubType !== 'night-stay';
+                    if (listingFilter === 'stay') return listing.listingSubType === 'night-stay';
+                    if (listingFilter === 'sale') return listing.type === 'sale';
+                    return true;
+                  })
+                  .map((listing) => (
+                    <div
+                      key={listing._id}
+                      className='bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col'
+                    >
+                      <div className='relative h-48'>
+                        <img
+                          src={listing.imageUrls[0]}
+                          alt={listing.name}
+                          className='w-full h-full object-cover'
+                        />
+                        <div className='absolute top-2 right-2 bg-white dark:bg-slate-800 px-2 py-1 rounded text-xs font-bold shadow-sm dark:text-slate-200'>
+                          {listing.listingSubType === 'night-stay' ? 'Stay' : (listing.type === 'rent' ? 'Rent' : 'Sale')}
+                        </div>
+                      </div>
+
+                      <div className='p-4 flex-1 flex flex-col'>
+                        <h3 className='text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1 truncate'>
+                          {listing.name}
+                        </h3>
+                        <p className='text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1 mb-3'>
+                          <FaMapMarkerAlt className='text-green-600' />
+                          <span className='truncate'>{listing.address}</span>
+                        </p>
+
+                        <div className='mt-auto flex gap-2'>
+                          <button
+                            onClick={() => navigate(`/update-listing/${listing._id}`)}
+                            className='flex-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-lg py-2 text-sm font-semibold hover:bg-green-100 dark:hover:bg-green-900/50 flex items-center justify-center gap-1'
+                          >
+                            <FaEdit /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleListingDelete(listing._id)}
+                            className='flex-1 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg py-2 text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/50 flex items-center justify-center gap-1'
+                          >
+                            <FaTrash /> Delete
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => navigate(`/listing/${listing._id}`)}
+                          className='w-full mt-2 text-purple-600 dark:text-purple-400 text-sm font-medium hover:underline text-center'
+                        >
+                          View Details
+                        </button>
                       </div>
                     </div>
-
-                    <div className='p-4 flex-1 flex flex-col'>
-                      <h3 className='text-lg font-semibold text-slate-800 mb-1 truncate'>
-                        {listing.name}
-                      </h3>
-                      <p className='text-sm text-slate-500 flex items-center gap-1 mb-3'>
-                        <FaMapMarkerAlt className='text-green-600' />
-                        <span className='truncate'>{listing.address}</span>
-                      </p>
-
-                      <div className='mt-auto flex gap-2'>
-                        <button
-                          onClick={() => navigate(`/update-listing/${listing._id}`)}
-                          className='flex-1 bg-green-50 text-green-700 border border-green-200 rounded-lg py-2 text-sm font-semibold hover:bg-green-100 flex items-center justify-center gap-1'
-                        >
-                          <FaEdit /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleListingDelete(listing._id)}
-                          className='flex-1 bg-red-50 text-red-700 border border-red-200 rounded-lg py-2 text-sm font-semibold hover:bg-red-100 flex items-center justify-center gap-1'
-                        >
-                          <FaTrash /> Delete
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => navigate(`/listing/${listing._id}`)}
-                        className='w-full mt-2 text-purple-600 text-sm font-medium hover:underline text-center'
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>

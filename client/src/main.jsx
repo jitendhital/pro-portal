@@ -6,6 +6,7 @@ import { store, persistor } from './redux/store.js'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { ToastProvider } from './contexts/ToastContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import ErrorBoundary from './ErrorBoundary.jsx'
 
 console.log('🚀 Starting app...');
@@ -25,9 +26,11 @@ try {
       <ErrorBoundary>
         <Provider store={store}>
           <PersistGate loading={<div style={{ padding: '20px', textAlign: 'center', background: 'purple', color: 'white' }}>Loading...</div>} persistor={persistor}>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <ThemeProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+            </ThemeProvider>
           </PersistGate>
         </Provider>
       </ErrorBoundary>

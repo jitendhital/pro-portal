@@ -8,13 +8,13 @@ export default function OAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-     const handleGoogleClick = async () => {
+  const handleGoogleClick = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
 
-       const result = await signInWithPopup(auth, provider);
-       const res = await fetch('/api/auth/google', {
+      const result = await signInWithPopup(auth, provider);
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,14 +35,14 @@ export default function OAuth() {
     catch (error) {
       console.log('could not sign in with google', error);
     }
-};
+  };
   return (
     <button
       type="button"
       onClick={handleGoogleClick}
-       className=' w-full inline-flex items-center justify-center gap-3 rounded-xl bg-white px-4 py-2.5 border border-slate-200 text-sm font-medium text-slate-700 shadow-sm hover:bg-purple-50 hover:text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1 transition-all'
-       >
-       <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+      className=' w-full inline-flex items-center justify-center gap-3 rounded-xl bg-white dark:bg-slate-700 px-4 py-2.5 border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm hover:bg-purple-50 dark:hover:bg-slate-600 hover:text-purple-900 dark:hover:text-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1 dark:focus:ring-offset-slate-800 transition-all'
+    >
+      <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
         <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
           <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
           <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z" />
@@ -51,8 +51,8 @@ export default function OAuth() {
         </g>
       </svg>
       <span>Continue with Google</span>
-       </button>
+    </button>
   )
-    
+
 }
-     
+

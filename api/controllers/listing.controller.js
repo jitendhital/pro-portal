@@ -249,72 +249,107 @@ export const getListings = async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit) || 9;
     const startIndex = parseInt(req.query.startIndex) || 0;
-    let offer = req.query.offer;
 
-    if (offer === undefined || offer === 'false') {
-      offer = { $in: [false, true] };
+    // --- Hard Filters ($match) ---
+    const matchStage = {};
+
+    // 1. Search Term (Name)
+    if (req.query.searchTerm) {
+      matchStage.name = { $regex: req.query.searchTerm, $options: 'i' };
     }
 
-    let furnished = req.query.furnished;
-
-    if (furnished === undefined || furnished === 'false') {
-      furnished = { $in: [false, true] };
+    // 2. Type (Strict)
+    const type = req.query.type;
+    if (type && type !== 'all') {
+      if (type === 'rent') {
+        // Rent should exclude night-stay
+        matchStage.type = 'rent';
+        matchStage.listingSubType = { $ne: 'night-stay' };
+      } else if (type === 'night-stay') {
+        // Night-stay: use listingSubType which is always set on creation
+        matchStage.listingSubType = 'night-stay';
+      } else {
+        // Sale or others
+        matchStage.type = type;
+      }
     }
+    // When type is 'all' or undefined → no type filter added → returns everything
 
-    let parking = req.query.parking;
+    // 3. Offer — now a SOFT filter (scoring/prioritization), not a hard filter
+    // Moved to scoreAdditions below so offer properties sort first
+    // but non-offer properties still appear
 
-    if (parking === undefined || parking === 'false') {
-      parking = { $in: [false, true] };
-    }
+    // 4. Other Hard Filters
+    if (req.query.maxGuests) matchStage.maxGuests = { $gte: parseInt(req.query.maxGuests) };
 
-    let type = req.query.type;
-
-    if (type === undefined || type === 'all') {
-      type = { $in: ['sale', 'rent', 'night-stay'] };
-    }
-
-    const searchTerm = req.query.searchTerm || '';
-    const sort = req.query.sort || 'createdAt';
-    const order = req.query.order || 'desc';
-
-    const query = {
-      name: { $regex: searchTerm, $options: 'i' },
-      offer,
-      furnished,
-      parking,
-      type,
-      ...(req.user && { userRef: { $ne: req.user.id } }),
-    };
-
-    // Add Night-Stay specific filters only if they are true
-    if (req.query.bbqAvailable === 'true') query.bbqEnabled = true;
-    if (req.query.campfireAvailable === 'true') query.campfireEnabled = true;
-    if (req.query.soundSystemAvailable === 'true') query.soundSystemEnabled = true;
-
-    // Add maxGuests filter if provided
-    if (req.query.maxGuests) {
-      query.maxGuests = { $gte: parseInt(req.query.maxGuests) };
-    }
-
-    // Add category filter if provided
-    if (req.query.category) {
-      const categories = req.query.category.split(',');
-      query.categories = { $in: categories };
-    }
-
-    // Add price range filter
     if (req.query.minPrice || req.query.maxPrice) {
-      query.regularPrice = {};
-      if (req.query.minPrice) query.regularPrice.$gte = parseFloat(req.query.minPrice);
-      if (req.query.maxPrice) query.regularPrice.$lte = parseFloat(req.query.maxPrice);
+      matchStage.regularPrice = {};
+      if (req.query.minPrice) matchStage.regularPrice.$gte = parseFloat(req.query.minPrice);
+      if (req.query.maxPrice) matchStage.regularPrice.$lte = parseFloat(req.query.maxPrice);
     }
 
-    const listings = await Listing.find(query)
-      .sort({ [sort]: order })
-      .limit(limit)
-      .skip(startIndex);
+    if (req.query.category) {
+      matchStage.categories = { $in: req.query.category.split(',') };
+    }
+
+    // 5. Exclude own listings if logged in
+    // Note: userRef is stored as String, but req.user.id from JWT is an ObjectId
+    // Must convert to string for proper $ne comparison in aggregation
+    if (req.user) {
+      matchStage.userRef = { $ne: String(req.user.id) };
+    }
+
+    console.log('Search Query Params:', req.query);
+    console.log('Match Stage:', matchStage);
+
+    // --- Scoring ($addFields) for Soft Filters ---
+    // Amenities: parking, furnished, offer, bbqEnabled, campfireEnabled, soundSystemEnabled
+    const scoreAdditions = [0]; // Start with 0
+
+    if (req.query.parking === 'true') {
+      scoreAdditions.push({ $cond: [{ $eq: ["$parking", true] }, 1, 0] });
+    }
+    if (req.query.furnished === 'true') {
+      scoreAdditions.push({ $cond: [{ $eq: ["$furnished", true] }, 1, 0] });
+    }
+    if (req.query.offer === 'true') {
+      scoreAdditions.push({ $cond: [{ $eq: ["$offer", true] }, 1, 0] });
+    }
+    // Night-stay specific amenities
+    if (req.query.bbqAvailable === 'true') {
+      scoreAdditions.push({ $cond: [{ $eq: ["$bbqEnabled", true] }, 1, 0] });
+    }
+    if (req.query.campfireAvailable === 'true') {
+      scoreAdditions.push({ $cond: [{ $eq: ["$campfireEnabled", true] }, 1, 0] });
+    }
+    if (req.query.soundSystemAvailable === 'true') {
+      scoreAdditions.push({ $cond: [{ $eq: ["$soundSystemEnabled", true] }, 1, 0] });
+    }
+
+    const scoreExpression = { $add: scoreAdditions };
+
+    // --- Sorting ($sort) ---
+    // First by score (desc), then by user selection
+    const sortStage = {};
+    sortStage.score = -1; // High match score first
+
+    const userSort = req.query.sort || 'createdAt';
+    const userOrder = req.query.order === 'asc' ? 1 : -1;
+    sortStage[userSort] = userOrder;
+
+    // --- Pipeline Execution ---
+    const pipeline = [
+      { $match: matchStage },
+      { $addFields: { score: scoreExpression } },
+      { $sort: sortStage },
+      { $skip: startIndex },
+      { $limit: limit }
+    ];
+
+    const listings = await Listing.aggregate(pipeline);
 
     return res.status(200).json(listings);
+
   } catch (error) {
     next(error);
   }

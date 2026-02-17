@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaSun, FaMoon } from 'react-icons/fa';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -9,6 +10,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthPage = ['/signIn', '/signUp'].includes(location.pathname);
+  const { theme, toggleTheme } = useTheme();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,31 +29,30 @@ export default function Header() {
   }, [location.search]);
 
   return (
-    // Header container with a purple-tinted background and a subtle shadow
-    <header className="bg-purple-100 shadow-md">
+    // Header container
+    <header className="sticky top-0 z-50 bg-purple-100 dark:bg-slate-900 shadow-md dark:shadow-slate-700/30 transition-colors duration-300">
       {/* Inner div to control spacing and alignment */}
       <div className={`flex items-center max-w-6xl mx-auto p-3 ${isAuthPage ? 'justify-center' : 'justify-between'}`}>
         {/* Logo */}
         <Link to="/">
           <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
-            <span className="text-purple-500">Home</span>
-            <span className="text-purple-700">Hive</span>
+            <span className="text-purple-500 dark:text-purple-400">Home</span>
+            <span className="text-purple-700 dark:text-purple-300">Hive</span>
           </h1>
         </Link>
 
         {/* Search Form */}
         {!isAuthPage && (
-          <form onSubmit={handleSubmit} className="bg-purple-50 p-3 rounded-lg flex items-center border border-purple-200">
+          <form onSubmit={handleSubmit} className="bg-purple-50 dark:bg-slate-800 p-3 rounded-lg flex items-center border border-purple-200 dark:border-slate-600 transition-colors duration-300">
             <input
               type="text"
               placeholder="Search..."
-              // The input field is wider on larger screens (sm:) and has no focus outline
-              className="bg-transparent focus:outline-none w-24 sm:w-64 placeholder-purple-300"
+              className="bg-transparent focus:outline-none w-24 sm:w-64 placeholder-purple-300 dark:placeholder-slate-500 dark:text-slate-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button type="submit">
-              <FaSearch className="text-purple-600" />
+              <FaSearch className="text-purple-600 dark:text-purple-400" />
             </button>
           </form>
         )}
@@ -60,37 +61,49 @@ export default function Header() {
         {!isAuthPage && (
           <ul className="flex gap-4 items-center">
             <Link to="/">
-              <li className="hidden sm:inline text-purple-700 hover:text-purple-900 hover:underline transition-colors font-medium">
+              <li className="hidden sm:inline text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 hover:underline transition-colors font-medium">
                 Home
               </li>
             </Link>
 
             <Link to="/about">
-              <li className="hidden sm:inline text-purple-700 hover:text-purple-900 hover:underline transition-colors font-medium">
+              <li className="hidden sm:inline text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 hover:underline transition-colors font-medium">
                 About
               </li>
             </Link>
 
             {currentUser && (
               <Link to="/dashboard">
-                <li className="hidden sm:inline text-purple-700 hover:text-purple-900 transition-colors font-medium">
+                <li className="hidden sm:inline text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 transition-colors font-medium">
                   Dashboard
                 </li>
               </Link>
             )}
 
-            {/* The "Sign In" and "Sign Up" links are always visible */}
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-purple-200 dark:hover:bg-slate-700 transition-colors duration-200"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <FaSun className="text-yellow-400 text-lg" />
+              ) : (
+                <FaMoon className="text-purple-700 text-lg" />
+              )}
+            </button>
+
             {currentUser ? (
               <Link to='/profile'>
                 <img
-                  className='rounded-full h-7 w-7 object-cover border-2 border-purple-300 hover:border-purple-500 transition-colors'
+                  className='rounded-full h-7 w-7 object-cover border-2 border-purple-300 dark:border-purple-500 hover:border-purple-500 dark:hover:border-purple-300 transition-colors'
                   src={currentUser.avatar}
                   alt='profile'
                 />
               </Link>
             ) : (
               <Link to='/signIn'>
-                <li className=' text-purple-700 hover:text-purple-900 hover:underline transition-colors font-medium'> Sign in</li>
+                <li className='text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 hover:underline transition-colors font-medium'>Sign in</li>
               </Link>
             )}
           </ul>
@@ -99,4 +112,3 @@ export default function Header() {
     </header>
   );
 }
-

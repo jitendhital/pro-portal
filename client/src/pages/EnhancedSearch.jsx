@@ -227,13 +227,13 @@ export default function EnhancedSearch() {
 
   // Filter Sidebar Component
   const FilterSidebar = ({ isMobile = false }) => (
-    <div className={`${isMobile ? 'fixed inset-0 z-50 bg-white overflow-y-auto' : ''} p-6 border-b-2 md:border-r-2 md:min-h-screen bg-white`}>
+    <div className={`${isMobile ? 'fixed inset-0 z-50 bg-white dark:bg-slate-900 overflow-y-auto' : ''} p-6 border-b-2 md:border-r-2 md:min-h-screen bg-white dark:bg-slate-900 dark:border-slate-700`}>
       {isMobile && (
-        <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-purple-800">Filters</h2>
+        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b dark:border-slate-700 p-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-purple-800 dark:text-purple-400">Filters</h2>
           <button
             onClick={() => setShowMobileFilters(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <FaTimes className="text-2xl" />
           </button>
@@ -243,7 +243,7 @@ export default function EnhancedSearch() {
       <div className="space-y-6">
         {/* Search Term */}
         <div>
-          <label className="block text-sm font-semibold text-purple-700 mb-2">
+          <label className="block text-sm font-semibold text-purple-700 dark:text-purple-400 mb-2">
             Search Term
           </label>
           <input
@@ -251,13 +251,13 @@ export default function EnhancedSearch() {
             value={filters.searchTerm}
             onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
             placeholder="Search properties..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-400"
           />
         </div>
 
         {/* Listing Type */}
         <div>
-          <label className="block text-sm font-semibold text-purple-700 mb-3">
+          <label className="block text-sm font-semibold text-purple-700 dark:text-purple-400 mb-3">
             Listing Type
           </label>
           <div className="space-y-2">
@@ -270,7 +270,7 @@ export default function EnhancedSearch() {
                   onChange={() => handleFilterChange('type', type)}
                   className="w-4 h-4 text-purple-600 focus:ring-purple-500"
                 />
-                <span className="capitalize">{type === 'all' ? 'All Types' : type === 'night-stay' ? 'Night-Stay' : type}</span>
+                <span className="capitalize dark:text-slate-300">{type === 'all' ? 'All Types' : type === 'night-stay' ? 'Night-Stay' : type}</span>
               </label>
             ))}
           </div>
@@ -278,7 +278,7 @@ export default function EnhancedSearch() {
 
         {/* Basic Amenities */}
         <div>
-          <label className="block text-sm font-semibold text-purple-700 mb-3">
+          <label className="block text-sm font-semibold text-purple-700 dark:text-purple-400 mb-3">
             Amenities
           </label>
           <div className="space-y-2">
@@ -289,7 +289,7 @@ export default function EnhancedSearch() {
                 onChange={(e) => handleFilterChange('parking', e.target.checked)}
                 className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span>Parking</span>
+              <span className='dark:text-slate-300'>Parking</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -298,7 +298,7 @@ export default function EnhancedSearch() {
                 onChange={(e) => handleFilterChange('furnished', e.target.checked)}
                 className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span>Furnished</span>
+              <span className='dark:text-slate-300'>Furnished</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -307,19 +307,19 @@ export default function EnhancedSearch() {
                 onChange={(e) => handleFilterChange('offer', e.target.checked)}
                 className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span>Special Offer</span>
+              <span className='dark:text-slate-300'>Special Offer</span>
             </label>
           </div>
         </div>
 
         {/* Night-Stay Specific Filters */}
         {filters.type === 'night-stay' && (
-          <div className="space-y-4 pt-4 border-t border-purple-200">
-            <h3 className="font-semibold text-purple-800">Night-Stay Filters</h3>
+          <div className="space-y-4 pt-4 border-t border-purple-200 dark:border-slate-700">
+            <h3 className="font-semibold text-purple-800 dark:text-purple-400">Night-Stay Filters</h3>
 
             {/* Add-ons */}
             <div>
-              <label className="block text-sm font-medium text-purple-700 mb-2">
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-400 mb-2">
                 Available Add-ons
               </label>
               <div className="space-y-2">
@@ -330,7 +330,7 @@ export default function EnhancedSearch() {
                     onChange={(e) => handleFilterChange('bbqAvailable', e.target.checked)}
                     className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                   />
-                  <span>BBQ Service</span>
+                  <span className='dark:text-slate-300'>BBQ Service</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -339,7 +339,7 @@ export default function EnhancedSearch() {
                     onChange={(e) => handleFilterChange('campfireAvailable', e.target.checked)}
                     className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                   />
-                  <span>Campfire</span>
+                  <span className='dark:text-slate-300'>Campfire</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -348,7 +348,7 @@ export default function EnhancedSearch() {
                     onChange={(e) => handleFilterChange('soundSystemAvailable', e.target.checked)}
                     className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                   />
-                  <span>Sound System</span>
+                  <span className='dark:text-slate-300'>Sound System</span>
                 </label>
               </div>
             </div>
@@ -381,7 +381,7 @@ export default function EnhancedSearch() {
                     onClick={() => handleCategoryToggle(cat)}
                     className={`px-3 py-1 rounded-lg border-2 transition-all capitalize text-sm ${filters.category.includes(cat)
                       ? 'bg-purple-600 text-white border-purple-600'
-                      : 'bg-white text-purple-700 border-purple-300 hover:border-purple-500'
+                      : 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-slate-600 hover:border-purple-500'
                       }`}
                   >
                     {cat}
@@ -438,7 +438,7 @@ export default function EnhancedSearch() {
 
         {/* Sort */}
         <div>
-          <label className="block text-sm font-semibold text-purple-700 mb-2">
+          <label className="block text-sm font-semibold text-purple-700 dark:text-purple-400 mb-2">
             Sort By
           </label>
           <select
@@ -448,7 +448,7 @@ export default function EnhancedSearch() {
               handleFilterChange('sort', sort);
               handleFilterChange('order', order);
             }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-slate-800 dark:text-slate-200"
           >
             <option value="createdAt_desc">Latest First</option>
             <option value="createdAt_asc">Oldest First</option>
@@ -458,7 +458,7 @@ export default function EnhancedSearch() {
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2 pt-4 border-t border-purple-200">
+        <div className="space-y-2 pt-4 border-t border-purple-200 dark:border-slate-700">
           <button
             onClick={applyFilters}
             className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
@@ -477,7 +477,7 @@ export default function EnhancedSearch() {
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen dark:bg-slate-900">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <FilterSidebar />
@@ -493,8 +493,8 @@ export default function EnhancedSearch() {
       {/* Main Content */}
       <div className="flex-1">
         {/* Header with Mobile Filter Button */}
-        <div className="sticky top-0 bg-white border-b z-10 p-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-purple-800">
+        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b dark:border-slate-700 z-10 p-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-purple-800 dark:text-purple-400">
             Search Results {listings.length > 0 && `(${listings.length})`}
           </h1>
           <button

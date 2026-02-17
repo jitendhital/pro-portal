@@ -4,13 +4,13 @@ import { Link } from 'react-router-dom';
 export default function About() {
   return (
     <div className='flex flex-col gap-8 p-3 max-w-4xl mx-auto my-10'>
-      <h1 className='text-3xl font-bold text-slate-700 text-center'>
+      <h1 className='text-3xl font-bold text-slate-700 dark:text-slate-200 text-center'>
         About HomeHive
       </h1>
 
-      <div className='flex flex-col gap-6 text-slate-600'>
+      <div className='flex flex-col gap-6 text-slate-600 dark:text-slate-400'>
         <section>
-          <h2 className='text-2xl font-semibold text-slate-700 mb-3'>
+          <h2 className='text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3'>
             Welcome to HomeHive
           </h2>
           <p className='text-lg leading-relaxed'>
@@ -23,7 +23,7 @@ export default function About() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-semibold text-slate-700 mb-3'>
+          <h2 className='text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3'>
             Our Mission
           </h2>
           <p className='text-lg leading-relaxed'>
@@ -35,12 +35,12 @@ export default function About() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-semibold text-slate-700 mb-3'>
+          <h2 className='text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3'>
             What We Offer
           </h2>
           <div className='flex flex-col gap-4'>
             <div>
-              <h3 className='text-xl font-semibold text-slate-700 mb-2'>
+              <h3 className='text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2'>
                 🏠 Comprehensive Property Listings
               </h3>
               <p className='text-lg leading-relaxed'>
@@ -51,7 +51,7 @@ export default function About() {
             </div>
 
             <div>
-              <h3 className='text-xl font-semibold text-slate-700 mb-2'>
+              <h3 className='text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2'>
                 🔍 Advanced Search & Filters
               </h3>
               <p className='text-lg leading-relaxed'>
@@ -63,7 +63,7 @@ export default function About() {
             </div>
 
             <div>
-              <h3 className='text-xl font-semibold text-slate-700 mb-2'>
+              <h3 className='text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2'>
                 📸 Rich Media Experience
               </h3>
               <p className='text-lg leading-relaxed'>
@@ -74,7 +74,7 @@ export default function About() {
             </div>
 
             <div>
-              <h3 className='text-xl font-semibold text-slate-700 mb-2'>
+              <h3 className='text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2'>
                 💰 Special Offers & Deals
               </h3>
               <p className='text-lg leading-relaxed'>
@@ -85,7 +85,7 @@ export default function About() {
             </div>
 
             <div>
-              <h3 className='text-xl font-semibold text-slate-700 mb-2'>
+              <h3 className='text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2'>
                 👤 User-Friendly Platform
               </h3>
               <p className='text-lg leading-relaxed'>
@@ -96,7 +96,7 @@ export default function About() {
             </div>
 
             <div>
-              <h3 className='text-xl font-semibold text-slate-700 mb-2'>
+              <h3 className='text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2'>
                 📍 Location-Based Search
               </h3>
               <p className='text-lg leading-relaxed'>
@@ -109,7 +109,7 @@ export default function About() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-semibold text-slate-700 mb-3'>
+          <h2 className='text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3'>
             For Property Owners
           </h2>
           <p className='text-lg leading-relaxed'>
@@ -122,7 +122,7 @@ export default function About() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-semibold text-slate-700 mb-3'>
+          <h2 className='text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3'>
             Get Started Today
           </h2>
           <p className='text-lg leading-relaxed mb-4'>
@@ -147,7 +147,7 @@ export default function About() {
         </section>
 
         <section className='mt-4'>
-          <p className='text-base text-slate-500 italic'>
+          <p className='text-base text-slate-500 dark:text-slate-500 italic'>
             HomeHive - Your trusted partner in finding the perfect place to call home.
           </p>
         </section>
@@ -155,3 +155,4 @@ export default function About() {
     </div>
   );
 }
+

@@ -1,7 +1,17 @@
 @import "tailwindcss";
 
+/* Tailwind v4 class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
   background-color: rgb(241, 241, 245);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body,
+:where(.dark) body {
+  background-color: #0f172a;
+  color: #e2e8f0;
 }
 
 /* Animations */
@@ -129,6 +139,19 @@ html {
   background: #7e22ce;
 }
 
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6d28d9;
+}
+
 /* Focus ring for accessibility */
 button:focus-visible,
 input:focus-visible,
@@ -140,5 +163,10 @@ textarea:focus-visible {
 /* Selection styling */
 ::selection {
   background-color: #9333ea;
+  color: white;
+}
+
+.dark ::selection {
+  background-color: #7c3aed;
   color: white;
 }

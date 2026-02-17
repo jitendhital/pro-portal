@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { FaSignOutAlt, FaTrashAlt } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { uploadImage } from '../utils/uploadImage';
@@ -315,7 +316,7 @@ export default function Profile() {
 
   return (
     <div className='p-3 max-w-lg mx-auto'>
-      <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
+      <h1 className='text-3xl font-semibold text-center my-7 dark:text-slate-100'>Profile</h1>
       <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
         <input
           onChange={handleFileChange}
@@ -353,7 +354,7 @@ export default function Profile() {
           id='username'
           value={formData.username}
           onChange={handleChange}
-          className='border p-3 rounded-lg'
+          className='border dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-400'
         />
         <input
           type='email'
@@ -361,7 +362,7 @@ export default function Profile() {
           id='email'
           value={formData.email}
           onChange={handleChange}
-          className='border p-3 rounded-lg'
+          className='border dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-400'
         />
         <input
           type='password'
@@ -369,7 +370,7 @@ export default function Profile() {
           id='password'
           value={formData.password}
           onChange={handleChange}
-          className='border p-3 rounded-lg'
+          className='border dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-400'
         />
 
         <button
@@ -395,31 +396,39 @@ export default function Profile() {
         Create Listing
       </button>
 
-      <div className='flex justify-between mt-5'>
-        <span
-          onClick={handleDeleteAccount}
-          disabled={deletingAccount}
-          className={`text-red-700 cursor-pointer hover:underline ${deletingAccount ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {deletingAccount ? 'Deleting...' : 'Delete account'}
-        </span>
+      {/* Show Listings Link */}
+      <div className='text-center mt-5'>
         <span
           onClick={handleShowListings}
-          className='text-emerald-600 cursor-pointer hover:underline font-medium'
+          className='text-emerald-600 dark:text-emerald-400 cursor-pointer hover:underline font-medium'
         >
           {showListings ? 'Hide listings' : 'Show listings'}
         </span>
-        <span
+      </div>
+
+      {/* Account Actions */}
+      <div className='flex flex-col gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700'>
+        <button
           onClick={handleSignOut}
-          className='text-red-700 cursor-pointer hover:underline'
+          className='flex items-center justify-center gap-2 w-full p-3 rounded-lg border-2 border-purple-500 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200'
         >
-          Sign out
-        </span>
+          <FaSignOutAlt />
+          Sign Out
+        </button>
+
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deletingAccount}
+          className='flex items-center justify-center gap-2 w-full p-3 rounded-lg border-2 border-red-300 dark:border-red-500/50 text-red-500 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-500 dark:hover:border-red-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+        >
+          <FaTrashAlt className='text-sm' />
+          {deletingAccount ? 'Deleting Account...' : 'Delete Account'}
+        </button>
       </div>
 
       {showListings && (
         <div className='mt-5'>
-          <h2 className='text-2xl font-semibold mb-4'>Your listings</h2>
+          <h2 className='text-2xl font-semibold mb-4 dark:text-slate-100'>Your listings</h2>
           {listingsLoading && <p className='text-center text-slate-600'>Loading listings...</p>}
           {listingsError && <p className='text-red-600 text-center'>{listingsError}</p>}
           {!listingsLoading && !listingsError && userListings.length === 0 && (
@@ -430,7 +439,7 @@ export default function Profile() {
               {userListings.map((listing) => (
                 <div
                   key={listing._id}
-                  className='flex items-center justify-between p-3 border border-gray-300 rounded-lg hover:shadow-lg transition-shadow'
+                  className='flex items-center justify-between p-3 border border-gray-300 dark:border-slate-600 rounded-lg hover:shadow-lg transition-shadow dark:bg-slate-800'
                 >
                   <div className='flex items-center gap-4 flex-1'>
                     <img
@@ -440,7 +449,7 @@ export default function Profile() {
                     />
                     <p
                       onClick={() => navigate(`/listing/${listing._id}`)}
-                      className='text-slate-700 font-semibold flex-1 cursor-pointer hover:underline'
+                      className='text-slate-700 dark:text-slate-200 font-semibold flex-1 cursor-pointer hover:underline'
                     >
                       {listing.name}
                     </p>

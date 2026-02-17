@@ -39,14 +39,14 @@ export default function ListingTypeSelector() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-purple-800 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-purple-800 dark:text-purple-400 mb-4">
             Create Your Listing
           </h1>
-          <p className="text-lg text-purple-600">
+          <p className="text-lg text-purple-600 dark:text-purple-500">
             Choose the type of listing you want to create
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function ListingTypeSelector() {
               <div
                 key={type.id}
                 onClick={() => navigate(type.route)}
-                className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:-translate-y-2"
+                className="group relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:-translate-y-2"
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -84,12 +84,12 @@ export default function ListingTypeSelector() {
                   </div>
 
                   {/* Title */}
-                  <h2 className="text-2xl font-bold text-purple-800 group-hover:text-white transition-colors duration-300 mb-3">
+                  <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-300 group-hover:text-white transition-colors duration-300 mb-3">
                     {type.title}
                   </h2>
 
                   {/* Description */}
-                  <p className="text-purple-600 group-hover:text-purple-100 transition-colors duration-300 mb-6 flex-grow">
+                  <p className="text-purple-600 dark:text-purple-400 group-hover:text-purple-100 transition-colors duration-300 mb-6 flex-grow">
                     {type.description}
                   </p>
 
@@ -115,7 +115,7 @@ export default function ListingTypeSelector() {
 
         {/* Footer Note */}
         <div className="mt-12 text-center">
-          <p className="text-purple-500 text-sm">
+          <p className="text-purple-500 dark:text-purple-400 text-sm">
             You can save your progress as a draft at any time
           </p>
         </div>
